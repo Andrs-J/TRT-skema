@@ -24,10 +24,10 @@
   --fs-clock: 36px;
 
   /* Række-typografi - ÆNDRE HER for at justere størrelser */
-  --fs-row-time: 28px;        /* Tid i hver række (venstre) */
+  --fs-row-time: 44px;        /* Tid i hver række (venstre) */
   --fs-row-title: 44px;       /* Titel i hver række (stor) */
   --fs-row-place: 26px;       /* Lokale i hver række */
-  --fs-signup: 24px;          /* Tilmelding-tekst i højre kolonne */
+  --fs-signup: 44px;          /* Tilmelding-tekst i højre kolonne */
 
   /* Andre */
   --next-card-radius: 12px;
