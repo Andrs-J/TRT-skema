@@ -9,9 +9,11 @@
 <body>
   <header>
     <div class="brand">
-      <h1>Dagens aktiviteter</h1>
-      <!-- "Tværfagligt Rehabiliteringsteam (TRT)" er fjernet -->
+      <h1>Aktiviteter – Udsigten</h1>
     </div>
+
+    <!-- Her vises dag + dato (midt i toppen) -->
+    <div id="currentDate" class="current-date" aria-live="polite"></div>
 
     <div class="meta">
       <div id="clock" aria-live="polite" class="clock">--:--</div>
@@ -24,9 +26,6 @@
 
   <main>
     <section class="hero" aria-labelledby="activities-title">
-      <!-- "Aktiviteter i dag" er fjernet -->
-
-      <!-- AKTIVITETSRÆKKE (EN RÆKKE PER AKTIVITET) -->
       <div id="activities" class="activities-list" aria-live="polite">
         <!-- JS indsætter rækker her -->
       </div>
