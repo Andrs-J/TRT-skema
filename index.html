@@ -1,29 +1,70 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <title>Aktiviteter – TRT</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aktiviteter – TRT (Udsigten)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header>
+    <div class="brand">
+      <h1>Aktiviteter – Udsigten</h1>
+      <div class="sub">Tværfagligt Rehabiliteringsteam (TRT)</div>
+    </div>
+    <div class="meta">
+      <div id="clock" aria-live="polite" class="clock">--:--</div>
+      <div id="status" class="status" aria-live="polite"></div>
+      <div class="controls">
+        <button id="refreshBtn" title="Opdater nu">Opdater</button>
+        <button id="fsBtn" title="Fuldskærm">Fuldskærm</button>
+      </div>
+    </div>
+  </header>
 
-<header>
-  <h1>Aktiviteter – Udsigten</h1>
-  <div id="clock"></div>
-</header>
+  <main>
+    <section class="now-card" aria-labelledby="now-title">
+      <div class="now-left">
+        <h2 id="now-title">Næste aktivitet</h2>
+        <div id="nextCard" class="card-content">
+          <div class="time">--:--</div>
+          <div class="activity">Ingen data</div>
+          <div class="place"></div>
+          <div class="signup"></div>
+          <div id="countdown" class="countdown" aria-live="polite"></div>
+        </div>
+      </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Tid (Start-Slut)</th>
-      <th>Aktivitet</th>
-      <th>Sted</th>
-      <th>Tilmelding</th>
-    </tr>
-  </thead>
-  <tbody id="activities"></tbody>
-</table>
+      <div class="now-right">
+        <h3>Kommer snart</h3>
+        <table class="activities-table" aria-describedby="activities-desc">
+          <caption id="activities-desc" class="visually-hidden">Liste over kommende aktiviteter i dag</caption>
+          <thead>
+            <tr>
+              <th scope="col">Tid</th>
+              <th scope="col">Aktivitet</th>
+              <th scope="col">Sted</th>
+              <th scope="col">Tilmelding</th>
+            </tr>
+          </thead>
+          <tbody id="activities"></tbody>
+        </table>
 
-<script src="script.js"></script>
+        <div class="qr-area">
+          <div class="qr-label">Se hele ugeskema</div>
+          <img id="qr" alt="QR til TRT minisite" />
+          <div class="qr-link"><a id="minisiteLink" href="#" target="_blank" rel="noopener">Åbn på tablet</a></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="message" class="message" aria-live="polite"></div>
+  </main>
+
+  <footer>
+    <small>Sidst opdateret: <span id="lastUpdated">–</span></small>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
