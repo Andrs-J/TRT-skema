@@ -36,12 +36,12 @@ th {
 th, td {
   padding: 18px 24px;
   border-bottom: 1px solid #ccc;
-  word-break: break-word; /* Sikrer, at lange tekstfelter brydes */
+  word-break: break-word;
 }
 
-/* Gør første kolonne lidt smallere, så start-slut tid ikke fylder for meget */
+/* Gør første kolonne smallere */
 table td:first-child {
-  width: 150px; /* Juster efter behov */
+  width: 150px;
 }
 
 /* Tilmelding-status */
