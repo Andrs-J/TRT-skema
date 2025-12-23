@@ -12,9 +12,9 @@
       <h1>Aktiviteter – Udsigten</h1>
       <div class="sub">Tværfagligt Rehabiliteringsteam (TRT)</div>
     </div>
+
     <div class="meta">
       <div id="clock" aria-live="polite" class="clock">--:--</div>
-      <div id="status" class="status" aria-live="polite"></div>
       <div class="controls">
         <button id="refreshBtn" title="Opdater nu">Opdater</button>
         <button id="fsBtn" title="Fuldskærm">Fuldskærm</button>
@@ -23,42 +23,23 @@
   </header>
 
   <main>
-    <section class="now-card" aria-labelledby="now-title">
-      <div class="now-left">
-        <h2 id="now-title">Næste aktivitet</h2>
-        <div id="nextCard" class="card-content">
-          <div class="time">--:--</div>
-          <div class="activity">Ingen data</div>
-          <div class="place"></div>
-          <div class="signup"></div>
-          <div id="countdown" class="countdown" aria-live="polite"></div>
-        </div>
+    <section class="hero" aria-labelledby="now-title">
+      <h2 id="now-title" class="visually-hidden">Næste aktivitet</h2>
+
+      <div id="nextCard" class="next-card">
+        <div class="time">--:--</div>
+        <div class="activity">Ingen data</div>
+        <div class="place"></div>
+        <div class="signup"></div>
+        <div id="countdown" class="countdown" aria-live="polite"></div>
       </div>
 
-      <div class="now-right">
-        <h3>Kommer snart</h3>
-        <table class="activities-table" aria-describedby="activities-desc">
-          <caption id="activities-desc" class="visually-hidden">Liste over kommende aktiviteter i dag</caption>
-          <thead>
-            <tr>
-              <th scope="col">Tid</th>
-              <th scope="col">Aktivitet</th>
-              <th scope="col">Sted</th>
-              <th scope="col">Tilmelding</th>
-            </tr>
-          </thead>
-          <tbody id="activities"></tbody>
-        </table>
-
-        <div class="qr-area">
-          <div class="qr-label">Se hele ugeskema</div>
-          <img id="qr" alt="QR til TRT minisite" />
-          <div class="qr-link"><a id="minisiteLink" href="#" target="_blank" rel="noopener">Åbn på tablet</a></div>
-        </div>
+      <div id="bigActivities" class="big-activities" aria-live="polite">
+        <!-- Her indsættes kommende aktiviteter som store kort -->
       </div>
+
+      <div id="message" class="message" aria-live="polite"></div>
     </section>
-
-    <div id="message" class="message" aria-live="polite"></div>
   </main>
 
   <footer>
