@@ -53,8 +53,10 @@ function fetchActivities() {
 // Hent første gang når siden loader
 fetchActivities();
 
-// Opdater automatisk hvert 2. minut (120000 ms)
-setInterval(fetchActivities, 120000);
+// Auto-refresh siden hvert 1. minut (60000 ms)
+setInterval(() => {
+  window.location.reload(true); // true tvinger hard reload i nogle browsere
+}, 60000); // 1 minut
 
 // Ur
 setInterval(() => {
