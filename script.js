@@ -162,11 +162,29 @@ function renderActivities(list) {
 
     const meta = document.createElement("div");
     meta.className = "meta";
+
+    // --- OPRUSTET TILMELDINGSELEMENT (ingen linjeskift + farveklasser) ---
     const signup = document.createElement("div");
     signup.className = "signup";
-    if (item.tilmelding === "ja") signup.textContent = "Tilmelding: JA (Ring)";
-    else if (item.tilmelding === "nej" || item.tilmelding === "nej.") signup.textContent = "Tilmelding: NEJ";
-    else signup.textContent = item.tilmelding || "";
+
+    // item.tilmelding er already lowercased in processData()
+    const t = (item.tilmelding || "").trim();
+
+    if (t === "ja") {
+      // Vis hele teksten, men tilføj klasse .ja så CSS kan farve rød
+      signup.textContent = "Tilmelding: JA (Ring)";
+      signup.classList.add("ja");
+    } else if (t === "nej" || t === "nej.") {
+      signup.textContent = "Tilmelding: NEJ";
+      signup.classList.add("nej");
+    } else if (t) {
+      // Ukendt/andet - capitalize første bogstav for pæn visning
+      signup.textContent = "Tilmelding: " + (t.charAt(0).toUpperCase() + t.slice(1));
+    } else {
+      signup.textContent = "";
+    }
+
+    // Append signup to meta
     meta.appendChild(signup);
 
     const countdown = document.createElement("div");
