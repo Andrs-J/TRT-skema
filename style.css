@@ -1,6 +1,7 @@
-/* style.css - header med dag+dato midt i toppen + række-layout for aktiviteter
-   -------------------------------------------------------------------------
-   For at gøre dato/tekst større/nemmere at justere: se variabler i :root.
+/* style.css - justeret så titel, dato og ur har samme tekststørrelse
+   ----------------------------------------------------------------
+   Ændr hurtigt størrelsen ved at redigere --fs-header-size i :root.
+   Filen bevarer resten af layoutet fra tidligere version.
 */
 
 :root{
@@ -13,12 +14,10 @@
   /* Side/gutter */
   --gutter-side: 12px;
 
-  /* STØRRELSER - justér disse for at gøre alt større/mindre */
-  --fs-brand-title: 64px;    /* "Aktiviteter – Udsigten" */
-  --fs-date: 32px;           /* Dag + dato (midt i header) */
-  --fs-clock: 96px;          /* Klokken øverst til højre */
+  /* --- HEADER: samme størrelse for titel, dato og ur --- */
+  --fs-header-size: 64px;    /* <-- Ændr denne værdi, så alle tre bliver samme størrelse */
 
-  /* Rækker */
+  /* Rækker (beholdes som før) */
   --row-gap: 18px;
   --time-col-width: 320px;
   --meta-col-width: 260px;
@@ -56,19 +55,19 @@ header{
 .brand{ flex: 0 0 auto; }
 .brand h1{
   margin:0;
-  font-size:var(--fs-brand-title);
+  font-size:var(--fs-header-size); /* samme størrelse */
   font-weight:900;
   letter-spacing:0.4px;
 }
 
 /* MIDTEN: Dag + dato (centret) */
 .current-date{
-  flex:1 1 auto;             /* fylder til midten */
+  flex:1 1 auto;
   text-align:center;
-  font-size:var(--fs-date);
+  font-size:var(--fs-header-size); /* samme størrelse */
   font-weight:700;
   color:#ffffff;
-  text-transform: capitalize; /* sørger for stort begyndelsesbogstav på ugedag */
+  text-transform: capitalize;
 }
 
 /* HØJRE: meta (ur + knapper) */
@@ -78,15 +77,16 @@ header{
   gap:18px;
   align-items:center;
 }
+/* UR - samme størrelse som titel og dato */
 .clock{
-  font-size:var(--fs-clock);
+  font-size:var(--fs-header-size); /* samme størrelse */
   font-weight:800;
   color:var(--accent);
   line-height:1;
   padding-right:8px;
 }
 
-/* Kontrolknapper */
+/* Kontrolknapper (mindre) */
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
@@ -98,7 +98,7 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* MAIN / HERO */
+/* MAIN */
 main{
   flex:1;
   padding:20px var(--gutter-side);
@@ -131,7 +131,7 @@ main{
   transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* VENSTRE: tid */
+/* VENSTRE: tid (uændret) */
 .activity-row .time{
   width: var(--time-col-width);
   min-width:140px;
@@ -141,16 +141,16 @@ main{
   letter-spacing:0.6px;
 }
 
-/* MIDTEN: titel + sted */
+/* MIDTEN: titel + sted (uændret) */
 .activity-row .title-place{ flex:1; display:flex; flex-direction:column; gap:6px; position:relative; }
 .activity-row .normal-info{ z-index:1; display:flex; flex-direction:column; gap:6px; }
 .activity-row .title{ font-size:var(--fs-row-title); font-weight:900; line-height:1.02; }
 .activity-row .place{ font-size:var(--fs-row-place); color:var(--muted); opacity:0.95; }
 
-/* Past-center (stor Afsluttet label, vises kun for past) */
+/* PAST center (uændret) */
 .activity-row .past-center{ display:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:100%; text-align:center; font-size:var(--fs-past-label); font-weight:900; color:#ffffff; z-index:2; pointer-events:none; text-shadow: 0 3px 12px rgba(0,0,0,0.6); opacity:0.95; }
 
-/* HØJRE: meta */
+/* HØJRE: meta (uændret) */
 .activity-row .meta{ width: var(--meta-col-width); min-width:140px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; text-align:right; }
 .activity-row .meta .signup{ font-size:var(--fs-signup); font-weight:900; }
 .activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
@@ -168,12 +168,10 @@ main{
 .message{ color:var(--muted); font-size:16px; text-align:center; }
 footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* RESPONSIV - til mindre skærme skaleres størrelser ned */
+/* RESPONSIV - skaler header ned på mindre skærme */
 @media (max-width:1200px){
   :root{
-    --fs-brand-title: 48px;
-    --fs-date: 28px;
-    --fs-clock: 72px;
+    --fs-header-size: 48px;
     --time-col-width: 260px;
     --meta-col-width: 200px;
     --fs-row-time: 24px;
@@ -185,9 +183,7 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
 }
 @media (max-width:900px){
   :root{
-    --fs-brand-title: 28px;
-    --fs-date: 20px;
-    --fs-clock: 40px;
+    --fs-header-size: 28px;
     --time-col-width: 120px;
     --meta-col-width: 110px;
     --fs-row-time: 18px;
@@ -200,3 +196,8 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
+
+/* HURTIG GUIDE:
+   - For at ændre titel/dato/ur-størrelse: rediger --fs-header-size i :root (øverst).
+   - Husk at opdatere responsive værdier i media-queries hvis du vil en anden skala på små skærme.
+*/
