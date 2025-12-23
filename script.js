@@ -1,5 +1,6 @@
-// script.js - opdateret med støtte for "Aflyst" kolonne + aflysningsårsag
-// Forventede kolonnenavne i sheet: "Aflyst" og "Aflyst_grund" (eller variationer - scriptet søger case-insensitivt)
+// script.js - komplet fil med robust detection af "Aflyst" kolonne + aflysningsårsag,
+// neutral "Tilmelding:" label med farvet status, automatisk date-update (henter nyt ved datoskifte)
+// Opdater/fuldskærm-knapper er fjernet.
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -25,7 +26,7 @@ function parseHM(str) {
   return { hh, mm };
 }
 
-// Polling/hard reload
+// Polling / hard reload
 const POLL_INTERVAL_MS = 60 * 1000;
 const STORAGE_KEY = "trt_last_snapshot_v1";
 const RELOAD_GRACE_MS = 10 * 1000;
@@ -52,7 +53,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Dato i header
+// Opdater dag+dato i header - hent nye aktiviteter ved dataskifte
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -60,15 +61,15 @@ function updateDate() {
   const el = $("currentDate");
   if (el) el.textContent = text;
 
-  // detect date change for auto-refresh
   const todayKey = d.toISOString().slice(0,10);
   if (window.__trt_last_date !== todayKey) {
     window.__trt_last_date = todayKey;
-    fetchActivities(); // hent nye aktiviteter ved dataskifte
+    // Hent nye aktiviteter når datoen skifter
+    fetchActivities();
   }
 }
 
-// HENT + PROCESS DATA (nu med aflyst-felt)
+// HENT + PROCESS DATA (med robust kolonne-detection for aflyst/årsag)
 async function fetchActivities(sheetName = SHEET_NAME) {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -98,29 +99,50 @@ async function fetchActivities(sheetName = SHEET_NAME) {
   }
 }
 
-// processData: udtræk også aflyst-status og aflysningsgrund
+// processData: finder dynamisk kolonner der matcher "aflyst" / "årsag" og parser rækker
 function processData(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return [];
+
+  // Find keys fra sheet (brug første række)
+  const sample = rows[0];
+  const keys = Object.keys(sample || {});
+
+  // Best-fit detection for aflyst og årsag
+  let aflystKey = null;
+  let reasonKey = null;
+  keys.forEach(k => {
+    const kl = String(k).toLowerCase();
+    if (!aflystKey && /aflyst|cancel|canceled|cancelled|annull|annuler/i.test(kl)) aflystKey = k;
+    if (!reasonKey && /årsag|arsag|grund|reason|cause|motivation|motiv/i.test(kl)) reasonKey = k;
+  });
+
+  console.info("TRT: fundne kolonne-keys:", keys);
+  console.info("TRT: aflystKey =", aflystKey, ", reasonKey =", reasonKey);
+
   const today = new Date();
   const processed = [];
 
-  rows.forEach(r => {
+  rows.forEach((r, idx) => {
     const startParsed = parseHM(r.Tid);
     const endParsed = parseHM(r.Slut);
-
-    // hvis tid mangler, skippes
     if (!startParsed || !endParsed) return;
 
-    // bygge start/end ud fra dagens dato
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate()+1);
+    if (end < start) end.setDate(end.getDate() + 1);
 
-    // find aflyst-kolonne (case-insensitiv)
-    const rawAflyst = (r.Aflyst || r.aflyst || r.Cancelled || r.canceled || r.Canceled || "").toString().trim().toLowerCase();
-    const isCancelled = ["ja","ja.","true","aflyst","cancelled","canceled"].includes(rawAflyst);
+    // Læs aflyst-værdien via det fundne nøgle-navn (hvis nogen)
+    let rawAflyst = "";
+    if (aflystKey && typeof r[aflystKey] !== "undefined" && r[aflystKey] !== null) {
+      rawAflyst = String(r[aflystKey]).trim().toLowerCase();
+    }
+    const isCancelled = ["ja", "ja.", "aflyst", "cancelled", "canceled", "true"].includes(rawAflyst);
 
-    // find aflysningsgrund (flere mulige navne)
-    const rawReason = (r.Aflyst_grund || r.AflystGrund || r.AflystÅrsag || r.aflyst_grund || r.aflys || r.reason || r.Aflysningsårsag || "").toString().trim();
+    // Læs årsag via reasonKey (hvis fundet)
+    let rawReason = "";
+    if (reasonKey && typeof r[reasonKey] !== "undefined" && r[reasonKey] !== null) {
+      rawReason = String(r[reasonKey]).trim();
+    }
 
     processed.push({
       raw: r,
@@ -132,13 +154,22 @@ function processData(rows) {
       cancelled: isCancelled,
       cancelReason: rawReason
     });
+
+    console.debug(`TRT: række ${idx+1} - aktivitet: "${r.Aktivitet || r.aktivitet}", aflystRaw: "${rawAflyst}", cancelled: ${isCancelled}, reason: "${rawReason}"`);
   });
 
-  // kun aktiviteter som ikke er ekstremt gamle (behold sene aktiviteter fra i går)
   const nowTime = now();
-  const filtered = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
-  filtered.sort((a,b) => a.start - b.start);
-  return filtered;
+  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
+  all.sort((a,b) => a.start - b.start);
+
+  const cancelledCount = all.filter(p => p.cancelled).length;
+  if (cancelledCount > 0) {
+    showMessage(`Der er ${cancelledCount} aflyste aktiviteter.`);
+  } else {
+    showMessage("");
+  }
+
+  return all;
 }
 
 // Render / vis rækker (inkl. cancelled)
@@ -166,7 +197,7 @@ function renderActivities(list) {
     timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
     row.appendChild(timeDiv);
 
-    // Midte: title/place, plus cancel-center & reason
+    // Midte: title/place, cancel-center & reason
     const tp = document.createElement("div");
     tp.className = "title-place";
 
@@ -181,16 +212,13 @@ function renderActivities(list) {
     normalInfo.appendChild(title);
     normalInfo.appendChild(place);
 
-    // cancel center label (stor rød tekst)
     const cancelCenter = document.createElement("div");
     cancelCenter.className = "cancel-center";
     cancelCenter.textContent = "Aflyst";
 
-    // hvis der er en aflysningsårsag, vis den under titlen (centreret)
     const cancelReason = document.createElement("div");
     cancelReason.className = "cancel-reason";
     cancelReason.textContent = item.cancelReason || "";
-    // skjul som default (CSS viser kun hvis .cancelled)
     if (!item.cancelled) cancelReason.style.display = "none";
 
     tp.appendChild(normalInfo);
@@ -198,15 +226,17 @@ function renderActivities(list) {
     tp.appendChild(cancelReason);
     row.appendChild(tp);
 
-    // Meta: tilmelding + countdown (men hvis cancelled: ingen countdown)
+    // Meta: tilmelding + countdown (gem countdown hvis cancelled)
     const meta = document.createElement("div");
     meta.className = "meta";
 
     const signup = document.createElement("div");
     signup.className = "signup";
+
     const labelSpan = document.createElement("span");
     labelSpan.className = "signup-label";
     labelSpan.textContent = "Tilmelding:";
+
     const statusSpan = document.createElement("span");
     statusSpan.className = "signup-status";
 
@@ -227,7 +257,6 @@ function renderActivities(list) {
     signup.appendChild(statusSpan);
     meta.appendChild(signup);
 
-    // countdown (men gem hvis cancelled)
     const countdown = document.createElement("div");
     countdown.className = "countdown";
     countdown.dataset.start = String(item.start.getTime());
@@ -256,7 +285,7 @@ function renderActivities(list) {
   updateAllCountdowns();
 }
 
-// Opdater countdowns, håndter cancelled/past/current states
+// Opdater countdowns, håndter cancelled/past/current
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
   const nowMs = Date.now();
@@ -271,18 +300,18 @@ function updateAllCountdowns() {
     const pastCenter = row.querySelector(".past-center");
     const cancelCenter = row.querySelector(".cancel-center");
 
-    // Hvis rækken er cancelled: sørg for cancelled-tilstand (ingen countdown)
+    // Hvis cancelled: vis aflyst-tilstand, ingen countdown
     if (row.classList.contains("cancelled")) {
       el.textContent = "";
       el.style.display = "none";
       if (signupEl) signupEl.style.opacity = "0.6";
       if (normalInfo) normalInfo.style.opacity = "0.85";
-      if (cancelCenter) cancelCenter.style.display = ""; // vis "Aflyst"
+      if (cancelCenter) cancelCenter.style.display = "";
       if (pastCenter) pastCenter.style.display = "none";
       row.classList.remove("current");
       return;
     } else {
-      el.style.display = ""; // normal
+      el.style.display = "";
     }
 
     if (nowMs >= start && nowMs <= end) {
