@@ -13,14 +13,17 @@ function fetchActivities() {
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       data.forEach(row => {
-        if (!row.Tid) return;
+        if (!row.Tid || !row.Slut) return; // Tjek både start og slut
 
-        // Konverter tid fra Sheet til minutter
-        const [hour, minute] = row.Tid.split(":").map(Number);
-        const activityMinutes = hour * 60 + minute;
+        // Konverter start og slut til minutter
+        const [startHour, startMinute] = row.Tid.split(":").map(Number);
+        const [endHour, endMinute] = row.Slut.split(":").map(Number);
 
-        // Spring aktiviteten over, hvis den allerede er startet/færdig
-        if (activityMinutes < currentMinutes) return;
+        const startMinutes = startHour * 60 + startMinute;
+        const endMinutes = endHour * 60 + endMinute;
+
+        // Vis kun aktiviteten, hvis vi er mellem start og slut
+        if (currentMinutes < startMinutes || currentMinutes > endMinutes) return;
 
         // Tilmelding: Ja (Ring) = rød, Nej = grøn
         let displayText = "";
@@ -36,7 +39,7 @@ function fetchActivities() {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row.Tid}</td>
+          <td>${row.Tid} - ${row.Slut}</td>
           <td>${row.Aktivitet}</td>
           <td>${row.Sted}</td>
           <td class="${statusClass}">${displayText}</td>
