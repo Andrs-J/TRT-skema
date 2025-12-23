@@ -1,6 +1,10 @@
-/* style.css - komplet replacement med neutral "Tilmelding:" og farvet status (JA/NEJ)
+/* style.css - komplet replacement med støtte for "Aflyst" (cancelled)
    --------------------------------------------------------
-   Ændr størrelsen for titel/dato/ur via --fs-header-size i :root.
+   Indeholder:
+   - samme header-/række-opsætning som før
+   - farvede JA/NEJ status (kun status-ordet farves)
+   - stor, rød "Aflyst" label for aflyste rækker (men titel/sted er stadig synlige)
+   - justér størrelser i :root (fx --fs-header-size)
 */
 
 :root{
@@ -12,13 +16,13 @@
 
   /* Status-farver */
   --success: #28a745;   /* grøn for NEJ */
-  --danger:  #ff6b6b;   /* rød for JA */
+  --danger:  #ff6b6b;   /* rød for JA / Aflyst */
 
   /* Side/gutter */
   --gutter-side: 12px;
 
   /* HEADER: samme størrelse for titel, dato og ur - justér her */
-  --fs-header-size: 64px;    /* Ændr denne hvis du vil have alt større/mindre */
+  --fs-header-size: 64px;
 
   /* Rækker / layout */
   --row-gap: 18px;
@@ -75,7 +79,7 @@ header{
   text-transform: capitalize;
 }
 
-/* Højre: ur + knapper (knapper fjernet) */
+/* Højre: ur */
 .meta{
   flex:0 0 auto;
   display:flex;
@@ -175,6 +179,24 @@ main{
   opacity:0.95;
 }
 
+/* AFLYST-CENTER (stor rød label) */
+.activity-row .cancel-center{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+  text-align:center;
+  font-size:calc(var(--fs-past-label) + 8px);
+  font-weight:900;
+  color: var(--danger);
+  z-index:3;
+  pointer-events:none;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.6);
+  opacity:0.98;
+}
+
 /* HØJRE: meta (tilmelding + countdown) */
 .activity-row .meta{
   width: var(--meta-col-width);
@@ -190,21 +212,28 @@ main{
 .activity-row .meta .signup{
   font-size:var(--fs-signup);
   font-weight:900;
-  white-space:nowrap;      /* forhindrer "JA (Ring)" i at blive delt på to linjer */
+  white-space:nowrap;
   display:inline-block;
   overflow:visible;
 }
-
-/* Label (f.eks. "Tilmelding:") - neutral farve */
 .activity-row .meta .signup .signup-label{
   color: var(--muted);
   margin-right:6px;
   font-weight:700;
 }
-
-/* Status (JA/NEJ) - farvet */
 .activity-row .meta .signup .signup-status.ja{ color: var(--danger); }
 .activity-row .meta .signup .signup-status.nej{ color: var(--success); }
+
+/* AFLYSNINGSÅRSAG (vises under titel hvis udfyldt) */
+.activity-row .cancel-reason{
+  font-size:16px;
+  color:var(--danger);
+  font-weight:700;
+  text-align:center;
+  opacity:0.95;
+  margin-top:4px;
+  z-index:1;
+}
 
 /* Countdown */
 .activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
@@ -217,6 +246,18 @@ main{
 .activity-row.past .normal-info{ opacity:0.75; }
 .activity-row.past .meta{ opacity:0.65; }
 .activity-row.past .past-center{ display:block; }
+
+/* CANCELLED (Aflyst) - tydelig men behold titel/sted (afdæmpet) */
+.activity-row.cancelled{
+  opacity:0.7;
+  filter: grayscale(20%);
+  background: linear-gradient(180deg, rgba(200,30,30,0.04), rgba(16,16,16,0.06));
+}
+.activity-row.cancelled .normal-info{ opacity:0.85; } /* behold synligt */
+.activity-row.cancelled .meta{ opacity:0.6; }
+.activity-row.cancelled .cancel-center{ display:block; }      /* vis stort Aflyst */
+.activity-row.cancelled .cancel-reason{ display:block; }      /* vis anledning hvis udfyldt */
+.activity-row.cancelled .past-center{ display:none; }        /* skjul past-label hvis cancelled */
 
 /* MARKÉR NUVÆRENDE */
 .activity-row.current{
@@ -268,8 +309,3 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
-
-/* HURTIG GUIDE:
-   - For at ændre titel/dato/ur-størrelse: rediger --fs-header-size i :root.
-   - Hvis tilmeldingslinjen stadig bryder: øg --meta-col-width eller reducer --fs-signup.
-*/
