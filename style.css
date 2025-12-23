@@ -1,11 +1,7 @@
-/* style.css - tabel-lignende layout (én aktivitet per række)
+/* style.css - større tekst i rækkerne (til læsning på afstand)
    ---------------------------------------------------------
-   Dansk kommenteret: ændringer foretages primært i :root (øverst).
-   Ændringer du ofte vil lave:
-   - 'lokalet' i rækken:   --fs-row-place
-   - 'tilmelding' i rækken: --fs-signup
-   - bredde på tid/metadata kolonner: --time-col-width, --meta-col-width
-   - side-gutter: --gutter-side
+   Ændr størrelser i :root-sektionen nederst hvis du vil finjustere.
+   Denne version gør rækkerne markant større så de er læsbare fra flere meter.
 */
 
 :root{
@@ -18,22 +14,28 @@
   --danger: #ff6b6b;
 
   /* Layout */
-  --gutter-side: 12px;        /* afstand til venstre/højre - sæt 0 for kant-til-kant */
-  --row-gap: 12px;
-  --time-col-width: 260px;    /* bredde på tid-kolonnen */
-  --meta-col-width: 200px;    /* bredde på højre meta-kolonne */
+  --gutter-side: 12px;        /* afstand fra kant - sæt 0 for kant-til-kant */
+  --row-gap: 18px;            /* afstand mellem rækker */
+  --time-col-width: 320px;    /* bredde på tid-kolonnen - øget for større tid */
+  --meta-col-width: 260px;    /* bredde på højre meta-kolonne (tilmelding + countdown) */
 
-  /* Typografi */
+  /* TYPografi - STØRRE værdier for lang afstand */
   --fs-brand-title: 32px;
   --fs-clock: 36px;
-  --fs-next-time: 72px;       /* beholdes hvis du havde et 'næste'-kort tidligere */
-  --fs-row-time: 20px;        /* Tid i hver aktivitet-række */
-  --fs-row-title: 22px;       /* Titel i hver række */
-  --fs-row-place: 16px;       /* LOKALE i hver række (ændr denne) */
-  --fs-signup: 16px;          /* TILMELDING-tekst i højre kolonne (ændr denne) */
+
+  /* Række-typografi - ÆNDRE HER for at justere størrelser */
+  --fs-row-time: 28px;        /* Tid i hver række (venstre) */
+  --fs-row-title: 44px;       /* Titel i hver række (stor) */
+  --fs-row-place: 26px;       /* Lokale i hver række */
+  --fs-signup: 24px;          /* Tilmelding-tekst i højre kolonne */
+
+  /* Andre */
+  --next-card-radius: 12px;
 }
 
-/* Generelt */
+/* =========================
+   Generelt
+   ========================= */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -94,25 +96,26 @@ main{
 .activity-row{
   background:var(--card);
   border-radius:8px;
-  padding:12px 16px;
+  padding:14px 18px;
   color:#f3fbff;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  box-shadow: 0 5px 18px rgba(0,0,0,0.38);
   display:flex;
   align-items:center;
-  gap:16px;
-  min-height:72px;
+  gap:20px;
+  min-height:88px; /* øget for visuelt luft */
 }
 
-/* Kolonne: tid (venstre) */
+/* Kolonne: Tid (venstre) - stor og tydelig */
 .activity-row .time{
   width: var(--time-col-width);
-  min-width:120px;
+  min-width:140px;
   font-size:var(--fs-row-time);
-  font-weight:700;
+  font-weight:800;
   color:var(--accent);
+  letter-spacing:0.6px;
 }
 
-/* Kolonne: titel + sted (midt) */
+/* Kolonne: Titel + sted (midt) - stor tekst */
 .activity-row .title-place{
   flex:1;
   display:flex;
@@ -121,18 +124,19 @@ main{
 }
 .activity-row .title{
   font-size:var(--fs-row-title);
-  font-weight:800;
-  line-height:1.05;
+  font-weight:900;
+  line-height:1.02;
 }
 .activity-row .place{
-  font-size:var(--fs-row-place); /* Ændr denne variabel for 'lokalet' */
+  font-size:var(--fs-row-place); /* Ændr denne for 'lokalet' */
   color:var(--muted);
+  opacity:0.95;
 }
 
 /* Kolonne: meta (højre) - tilmelding + countdown */
 .activity-row .meta{
   width: var(--meta-col-width);
-  min-width:120px;
+  min-width:140px;
   display:flex;
   flex-direction:column;
   align-items:flex-end;
@@ -140,11 +144,11 @@ main{
   text-align:right;
 }
 .activity-row .meta .signup{
-  font-size:var(--fs-signup); /* Ændr denne variabel for 'tilmelding' */
-  font-weight:800;
+  font-size:var(--fs-signup); /* Ændr denne for 'tilmelding' */
+  font-weight:900;
 }
 .activity-row .meta .countdown{
-  font-size:13px;
+  font-size:16px;
   color:var(--muted);
 }
 
@@ -154,21 +158,31 @@ main{
   transform: translateY(-2px);
 }
 
-/* Besked/ footer */
-.message{ color:var(--muted); font-size:15px; text-align:center; }
-footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:13px; border-top:1px solid rgba(255,255,255,0.02); }
+/* Besked & footer */
+.message{ color:var(--muted); font-size:16px; text-align:center; }
+footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* Responsiv: mindre skærme */
+/* Responsiv: mindre skærme (skru ned automatisk) */
+@media (max-width:1200px){
+  :root{
+    --time-col-width: 260px;
+    --meta-col-width: 200px;
+    --fs-row-time: 24px;
+    --fs-row-title: 36px;
+    --fs-row-place: 22px;
+    --fs-signup: 20px;
+  }
+}
 @media (max-width:900px){
   :root{
     --time-col-width: 120px;
     --meta-col-width: 110px;
-    --fs-row-time: 16px;
-    --fs-row-title: 18px;
+    --fs-row-time: 18px;
+    --fs-row-title: 20px;
     --fs-row-place: 14px;
     --fs-signup: 14px;
     --gutter-side: 10px;
   }
-  .activity-row{ padding:10px; min-height:64px; }
+  .activity-row{ padding:10px; min-height:64px; gap:12px; }
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
