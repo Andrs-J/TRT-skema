@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Aktiviteter – TRT (Udsigten)</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
@@ -23,19 +23,12 @@
   </header>
 
   <main>
-    <section class="hero" aria-labelledby="now-title">
-      <h2 id="now-title" class="visually-hidden">Næste aktivitet</h2>
+    <section class="hero" aria-labelledby="activities-title">
+      <h2 id="activities-title" class="visually-hidden">Aktiviteter i dag</h2>
 
-      <div id="nextCard" class="next-card">
-        <div class="time">--:--</div>
-        <div class="activity">Ingen data</div>
-        <div class="place"></div>
-        <div class="signup"></div>
-        <div id="countdown" class="countdown" aria-live="polite"></div>
-      </div>
-
-      <div id="bigActivities" class="big-activities" aria-live="polite">
-        <!-- Her indsættes kommende aktiviteter som store kort -->
+      <!-- AKTIVITETSRÆKKE (EN RÆKKE PER AKTIVITET) -->
+      <div id="activities" class="activities-list" aria-live="polite">
+        <!-- JS indsætter rækker her -->
       </div>
 
       <div id="message" class="message" aria-live="polite"></div>
