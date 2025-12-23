@@ -10,13 +10,10 @@ function fetchActivities() {
       const table = document.getElementById("activities");
       table.innerHTML = "";
 
-      // Håndter både array og objekt (OpenSheet returnerer ofte { Sheet1: [...] })
-      let activitiesArray = [];
-      if (Array.isArray(data)) {
-        activitiesArray = data;
-      } else if (data[SHEET_NAME] && Array.isArray(data[SHEET_NAME])) {
-        activitiesArray = data[SHEET_NAME];
-      } else {
+      // Konverter til array, hvis det er et objekt
+      let activitiesArray = Array.isArray(data) ? data : Object.values(data);
+
+      if (!activitiesArray || activitiesArray.length === 0) {
         console.warn("Ingen aktiviteter fundet i fetch:", data);
         return;
       }
@@ -38,7 +35,7 @@ function fetchActivities() {
 
         if (isNaN(startTime) || isNaN(endTime)) return;
 
-        // Vis aktivitet hvis den endnu ikke er slut
+        // Vis kun aktivitet hvis den endnu ikke er slut
         if (now > endTime) return;
 
         let displayText = "";
