@@ -57,10 +57,10 @@ fetchActivities();
 // Opdater data hvert 2. minut
 setInterval(fetchActivities, 120000);
 
-// Auto-refresh hele siden hvert 1. minut
+// Auto-refresh hele siden hvert 10. minut
 setInterval(() => {
   window.location.reload(true); // Hård refresh
-}, 60000);
+}, 600000); // 10 minutter
 
 // Live-ur
 setInterval(() => {
