@@ -1,0 +1,55 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: white;
+  border-bottom: 2px solid #ddd;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+#clock {
+  font-size: 28px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 26px;
+}
+
+th {
+  background: #e5e5e5;
+  text-align: left;
+}
+
+th, td {
+  padding: 18px 24px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Tilmelding-status */
+.tilmelding-ledig {
+  color: green;
+  font-weight: bold;
+}
+
+.tilmelding-fuld {
+  color: orange;
+  font-weight: bold;
+}
+
+.tilmelding-aflyst {
+  color: red;
+  font-weight: bold;
+}
