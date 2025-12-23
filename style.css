@@ -1,27 +1,36 @@
-/* style.css - vis "Afsluttet" centreret, men behold titel/sted synlige (fadet)
-   Kommenteret på dansk - justér størrelser i :root */
+/* style.css - større header / hovedtekst for læsning på afstand
+   -------------------------------------------------------------
+   Justér størrelser i :root (øverst).
+*/
+
 :root{
+  /* Farver */
   --bg: #041021;
   --accent: #ffd166;
   --muted: #9fb3c8;
   --card: #093045;
-  --success: #28a745;
-  --danger: #ff6b6b;
 
+  /* Side/gutter */
   --gutter-side: 12px;
+
+  /* OVERSKRIFTER & UR - Ændr disse for at gøre alt større/mindre */
+  --fs-brand-title: 64px;   /* "Aktiviteter – Udsigten" */
+  --fs-brand-sub: 24px;     /* "Tværfagligt Rehabiliteringsteam (TRT)" */
+  --fs-clock: 96px;         /* Klokken øverst til højre */
+  --fs-main-heading: 44px;  /* "Aktiviteter i dag" */
+
+  /* Rækker (behold store rækker fra før) */
   --row-gap: 18px;
   --time-col-width: 320px;
   --meta-col-width: 260px;
-
-  --fs-row-time: 44px;
+  --fs-row-time: 28px;
   --fs-row-title: 44px;
   --fs-row-place: 26px;
-  --fs-signup: 30px;
-
+  --fs-signup: 24px;
   --fs-past-label: 40px;
 }
 
-/* Generelt */
+/* GENERELT */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -34,20 +43,45 @@ body{
   flex-direction:column;
 }
 
-/* Header */
+/* HEADER: venstre brand (stor) og højre clock (meget stor) */
 header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:16px var(--gutter-side);
+  padding:18px var(--gutter-side);
   background:rgba(255,255,255,0.02);
   border-bottom:1px solid rgba(255,255,255,0.03);
 }
-.brand h1{ margin:0; font-size:32px; }
-.brand .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
-.clock{ font-size:36px; font-weight:700; color:var(--accent); }
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.brand h1{
+  margin:0;
+  font-size:var(--fs-brand-title);
+  font-weight:900;
+  letter-spacing:0.4px;
+}
+.brand .sub{
+  font-size:var(--fs-brand-sub);
+  color:var(--muted);
+}
+.meta{
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+/* MEGET STORT UR - justér --fs-clock */
+.clock{
+  font-size:var(--fs-clock);
+  font-weight:800;
+  color:var(--accent);
+  line-height:1;
+  padding-right:8px;
+}
 
-/* Controls */
+/* Kontrolknapper (mindre) */
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
@@ -55,10 +89,11 @@ header{
   padding:8px 12px;
   border-radius:8px;
   cursor:pointer;
+  font-size:14px;
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* Main */
+/* MAIN */
 main{
   flex:1;
   padding:20px var(--gutter-side);
@@ -67,9 +102,18 @@ main{
   gap:18px;
   align-items:stretch;
 }
-.hero{ display:flex; flex-direction:column; gap:18px; width:100%; }
 
-/* Aktivitetsliste */
+/* VISIBLE OG STOR HOVED-TEKST ("Aktiviteter i dag") */
+.main-heading{
+  margin: 4px 0 8px;
+  text-align:center;
+  font-size:var(--fs-main-heading);
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:0.3px;
+}
+
+/* AKTIVITETSLISTE (RÆKKER) */
 .activities-list{
   width: calc(100% - (var(--gutter-side) * 2));
   display:flex;
@@ -78,7 +122,7 @@ main{
   margin:0 auto;
 }
 
-/* Hver række - 3 kolonner: tid | midte | meta */
+/* HVER RÆKKE */
 .activity-row{
   background:var(--card);
   border-radius:8px;
@@ -92,7 +136,7 @@ main{
   transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* Tid (venstre) */
+/* VENSTRE */
 .activity-row .time{
   width: var(--time-col-width);
   min-width:140px;
@@ -102,92 +146,40 @@ main{
   letter-spacing:0.6px;
 }
 
-/* Midten: container med normal-info og past-center overlay */
-.activity-row .title-place{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  position:relative; /* nødvendig for absolut centering af past-center */
-}
+/* MIDTEN */
+.activity-row .title-place{ flex:1; display:flex; flex-direction:column; gap:6px; position:relative; }
+.activity-row .normal-info{ z-index:1; display:flex; flex-direction:column; gap:6px; }
+.activity-row .title{ font-size:var(--fs-row-title); font-weight:900; line-height:1.02; }
+.activity-row .place{ font-size:var(--fs-row-place); color:var(--muted); opacity:0.95; }
 
-/* Normal info (titel + sted) */
-.activity-row .normal-info {
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  z-index:1; /* over baggrund */
-}
-.activity-row .title{
-  font-size:var(--fs-row-title);
-  font-weight:900;
-  line-height:1.02;
-}
-.activity-row .place{
-  font-size:var(--fs-row-place);
-  color:var(--muted);
-  opacity:0.95;
-}
+/* PAST center - stor label (vises kun når .past) */
+.activity-row .past-center{ display:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:100%; text-align:center; font-size:var(--fs-past-label); font-weight:900; color:#ffffff; z-index:2; pointer-events:none; text-shadow: 0 3px 12px rgba(0,0,0,0.6); opacity:0.95; }
 
-/* Past-center: placeres absolut centreret, men ikke skjuler underliggende tekst */
-.activity-row .past-center{
-  display:none;
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:100%;
-  text-align:center;
-  font-size:var(--fs-past-label);
-  font-weight:900;
-  color:#ffffff;
-  z-index:2; /* vises ovenpå normal-info men er let transparent */
-  pointer-events:none;
-  text-shadow: 0 3px 12px rgba(0,0,0,0.6);
-  opacity:0.95;
-}
+/* HØJRE META */
+.activity-row .meta{ width: var(--meta-col-width); min-width:140px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; text-align:right; }
+.activity-row .meta .signup{ font-size:var(--fs-signup); font-weight:900; }
+.activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
 
-/* Meta (højre) */
-.activity-row .meta{
-  width: var(--meta-col-width);
-  min-width:140px;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  gap:6px;
-  text-align:right;
-}
-.activity-row .meta .signup{
-  font-size:var(--fs-signup);
-  font-weight:900;
-}
-.activity-row .meta .countdown{
-  font-size:16px;
-  color:var(--muted);
-}
-
-/* Past-state: fade og gråtoning, men behold indhold synligt */
-.activity-row.past{
-  opacity: 0.65;
-  filter: grayscale(35%);
-}
-.activity-row.past .normal-info{ opacity: 0.75; } /* stadig synligt men afdæmpet */
-.activity-row.past .meta{ opacity: 0.65; }          /* meta fades */
-.activity-row.past .past-center{ display:block; }   /* vis stor Afsluttet label */
+/* Past-state: afdæmp men behold synligt indhold */
+.activity-row.past{ opacity: 0.65; filter: grayscale(35%); }
+.activity-row.past .normal-info{ opacity:0.75; }
+.activity-row.past .meta{ opacity:0.65; }
+.activity-row.past .past-center{ display:block; }
 
 /* Markér current */
-.activity-row.current{
-  outline: 3px solid rgba(255,209,102,0.12);
-  transform: translateY(-2px);
-}
+.activity-row.current{ outline: 3px solid rgba(255,209,102,0.12); transform: translateY(-2px); }
 
 /* Besked & footer */
 .message{ color:var(--muted); font-size:16px; text-align:center; }
 footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* Responsiv */
+/* RESPONSIV til mindre skærme */
 @media (max-width:1200px){
   :root{
+    --fs-brand-title: 48px;
+    --fs-brand-sub: 20px;
+    --fs-clock: 72px;
+    --fs-main-heading: 36px;
     --time-col-width: 260px;
     --meta-col-width: 200px;
     --fs-row-time: 24px;
@@ -199,21 +191,18 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
 }
 @media (max-width:900px){
   :root{
+    --fs-brand-title: 28px;
+    --fs-brand-sub: 14px;
+    --fs-clock: 40px;
+    --fs-main-heading: 20px;
     --time-col-width: 120px;
     --meta-col-width: 110px;
     --fs-row-time: 18px;
     --fs-row-title: 20px;
     --fs-row-place: 14px;
     --fs-signup: 14px;
+    --fs-past-label: 18px;
     --gutter-side: 10px;
-    --fs-past-label: 20px;
   }
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
-  .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
-
-/* Hurtig guide:
-   - For at gøre 'Afsluttet' større/små: --fs-past-label
-   - For at ændre 'lokalet' størrelse: --fs-row-place
-   - For at ændre 'tilmelding' størrelse: --fs-signup
-*/
