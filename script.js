@@ -1,7 +1,7 @@
 // ======= KONFIGURATION =======
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
-const MINISITE_URL = "https://dit-minisite-eksempel.example"; // RET TIL DIN minisite
+const MINISITE_URL = "https://dit-minisite-eksempel.example"; // RET TIL DIN minisite / GitHub Pages
 const QR_API = (text) => `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(text)}`;
 // Opensheet endpoint (praktisk til demo). Til produktion: overvej Google Apps Script/Sheets API.
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
@@ -10,8 +10,8 @@ const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 const $ = (id) => document.getElementById(id);
 const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 const now = () => new Date();
-const setStatus = (text) => { $("status").innerText = text; };
-const showMessage = (txt) => { $("message").innerText = txt || ""; };
+const setStatus = (text) => { if ($("status")) $("status").innerText = text; };
+const showMessage = (txt) => { if ($("message")) $("message").innerText = txt || ""; };
 
 // Gem/call cache
 function saveCache(data) {
@@ -34,7 +34,63 @@ function parseHM(str) {
   return { hh, mm };
 }
 
-// Hent og behandle data
+// ======= HARD-RELOAD / POLLING TIL ÆNDRINGER ====
+const POLL_INTERVAL_MS = 60 * 1000; // poll hvert 60s (juster om nødvendigt)
+const STORAGE_KEY = "trt_last_snapshot_v1";
+const RELOAD_GRACE_MS = 10 * 1000; // undgå reload-loop
+
+function nowTs() { return Date.now(); }
+
+async function pollForChanges() {
+  try {
+    // Tilføj cache-buster på fetch for at sikre frisk respons
+    const fetchUrl = url + (url.includes("?") ? "&" : "?") + "_=" + nowTs();
+    const res = await fetch(fetchUrl, { cache: "no-store" });
+    if (!res.ok) {
+      console.warn("Poll: fetch returned", res.status);
+      return;
+    }
+    const data = await res.json();
+
+    // Snapshot af det hentede (til sammenligning). Hvis sheet er meget stort, brug evt. en kort hash eller felt sammenligning.
+    const snapshot = JSON.stringify(data);
+
+    const last = localStorage.getItem(STORAGE_KEY);
+
+    if (last && last !== snapshot) {
+      console.log("Ændring i sheet registreret — laver hård reload");
+      triggerHardReload();
+      return;
+    }
+
+    // Gem snapshot hvis vi ikke havde noget før
+    if (!last) {
+      try { localStorage.setItem(STORAGE_KEY, snapshot); } catch (e) {}
+    }
+
+  } catch (err) {
+    console.error("Poll-fejl:", err);
+    // Ignorer fejl — prøver igen næste interval
+  }
+}
+
+function triggerHardReload() {
+  const lastReload = parseInt(localStorage.getItem("trt_last_reload_ts") || "0", 10);
+  if (Date.now() - lastReload < RELOAD_GRACE_MS) {
+    console.log("Reload afvist pga. grace window");
+    return;
+  }
+  localStorage.setItem("trt_last_reload_ts", String(Date.now()));
+
+  // Byg ny URL med cache-busting param 'r'
+  // Bevar eksisterende søgeparametre (undgår at akkumulere r=)
+  const urlObj = new URL(window.location.href);
+  urlObj.searchParams.set("r", String(nowTs()));
+  // Replace for at undgå ekstra entry i historik
+  window.location.replace(urlObj.toString());
+}
+
+// ======= HENT OG RENDER AKTIVITETER =======
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -47,8 +103,11 @@ async function fetchActivities() {
     // Gem i cache
     saveCache(data);
     setStatus("Opdateret");
-    $("lastUpdated").innerText = new Date().toLocaleString("da-DK");
+    if ($("lastUpdated")) $("lastUpdated").innerText = new Date().toLocaleString("da-DK");
     renderActivities(processData(data));
+
+    // Opdatér snapshot også så poll ser den nyeste version (undgår reload umiddelbart efter fetch)
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
 
   } catch (err) {
     console.error("Fejl ved hent:", err);
@@ -57,7 +116,7 @@ async function fetchActivities() {
     if (cached && cached.data) {
       showMessage("Viser senest hentede data (offline).");
       renderActivities(processData(cached.data));
-      $("lastUpdated").innerText = new Date(cached.ts).toLocaleString("da-DK");
+      if ($("lastUpdated")) $("lastUpdated").innerText = new Date(cached.ts).toLocaleString("da-DK");
     } else {
       showMessage("Kunne ikke hente aktiviteter, og der er ingen cache.");
       clearActivities();
@@ -108,6 +167,7 @@ function processData(rows) {
 // Rendre DOM
 function renderActivities(list) {
   const table = $("activities");
+  if (!table) return;
   table.innerHTML = "";
 
   const nowTime = now();
@@ -124,7 +184,6 @@ function renderActivities(list) {
   if (!current) {
     next = list.find(item => item.start > nowTime);
   } else {
-    // next = activity after current
     const idx = list.indexOf(current);
     next = list[idx + 1] || null;
   }
@@ -166,51 +225,59 @@ function renderActivities(list) {
   // Opdater "Næste aktivitet" kort
   const nextCard = $("nextCard");
   const countdownEl = $("countdown");
-  const signupEl = nextCard.querySelector(".signup");
-  if (current) {
-    nextCard.querySelector(".time").textContent = `${formatTime(current.start)} - ${formatTime(current.end)}`;
-    nextCard.querySelector(".activity").textContent = current.aktivitet;
-    nextCard.querySelector(".place").textContent = current.sted;
-    if (current.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
-    else if (current.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
-    else { signupEl.textContent = current.tilmelding || ""; signupEl.className = "signup"; }
-    startCountdown(current.end, "Slutter om: ", countdownEl);
-  } else if (next) {
-    nextCard.querySelector(".time").textContent = `${formatTime(next.start)} - ${formatTime(next.end)}`;
-    nextCard.querySelector(".activity").textContent = next.aktivitet;
-    nextCard.querySelector(".place").textContent = next.sted;
-    if (next.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
-    else if (next.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
-    else { signupEl.textContent = next.tilmelding || ""; signupEl.className = "signup"; }
-    startCountdown(next.start, "Starter om: ", countdownEl);
-  } else {
-    nextCard.querySelector(".time").textContent = "--:--";
-    nextCard.querySelector(".activity").textContent = "Ingen flere aktiviteter i dag";
-    nextCard.querySelector(".place").textContent = "";
-    signupEl.textContent = "";
-    countdownEl.textContent = "";
-    stopCountdown();
+  if (nextCard) {
+    const signupEl = nextCard.querySelector(".signup");
+    if (current) {
+      nextCard.querySelector(".time").textContent = `${formatTime(current.start)} - ${formatTime(current.end)}`;
+      nextCard.querySelector(".activity").textContent = current.aktivitet;
+      nextCard.querySelector(".place").textContent = current.sted;
+      if (current.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
+      else if (current.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
+      else { signupEl.textContent = current.tilmelding || ""; signupEl.className = "signup"; }
+      startCountdown(current.end, "Slutter om: ", countdownEl);
+    } else if (next) {
+      nextCard.querySelector(".time").textContent = `${formatTime(next.start)} - ${formatTime(next.end)}`;
+      nextCard.querySelector(".activity").textContent = next.aktivitet;
+      nextCard.querySelector(".place").textContent = next.sted;
+      if (next.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
+      else if (next.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
+      else { signupEl.textContent = next.tilmelding || ""; signupEl.className = "signup"; }
+      startCountdown(next.start, "Starter om: ", countdownEl);
+    } else {
+      nextCard.querySelector(".time").textContent = "--:--";
+      nextCard.querySelector(".activity").textContent = "Ingen flere aktiviteter i dag";
+      nextCard.querySelector(".place").textContent = "";
+      if (signupEl) signupEl.textContent = "";
+      if (countdownEl) countdownEl.textContent = "";
+      stopCountdown();
+    }
   }
 
-  // Opdater QR + link
+  // Opdater QR + link hvis elementer findes
   const qr = $("qr");
   const minisiteLink = $("minisiteLink");
-  minisiteLink.href = MINISITE_URL;
-  qr.src = QR_API(MINISITE_URL);
+  if (minisiteLink) minisiteLink.href = MINISITE_URL;
+  if (qr) qr.src = QR_API(MINISITE_URL);
 }
 
 // Nulstil tabel
 function clearActivities() {
-  $("activities").innerHTML = "";
-  $("nextCard").querySelector(".activity").textContent = "Ingen data";
-  $("nextCard").querySelector(".time").textContent = "--:--";
-  $("countdown").textContent = "";
+  if ($("activities")) $("activities").innerHTML = "";
+  const nc = $("nextCard");
+  if (nc) {
+    const activityEl = nc.querySelector(".activity");
+    const timeEl = nc.querySelector(".time");
+    if (activityEl) activityEl.textContent = "Ingen data";
+    if (timeEl) timeEl.textContent = "--:--";
+  }
+  if ($("countdown")) $("countdown").textContent = "";
 }
 
 // Nedtælling
 let countdownInterval = null;
 function startCountdown(targetDate, prefix, el) {
   stopCountdown();
+  if (!el) return;
   function tick() {
     const d = targetDate - new Date();
     if (d <= 0) {
@@ -235,21 +302,27 @@ function stopCountdown() { if (countdownInterval) { clearInterval(countdownInter
 // ====== Live ur ======
 function startClock() {
   setInterval(() => {
-    $("clock").innerText = formatTime(new Date());
+    if ($("clock")) $("clock").innerText = formatTime(new Date());
   }, 1000);
-  $("clock").innerText = formatTime(new Date());
+  if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
 // ====== UI events ======
-$("refreshBtn").addEventListener("click", () => fetchActivities());
-$("fsBtn").addEventListener("click", () => {
+if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
+if ($("fsBtn")) $("fsBtn").addEventListener("click", () => {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen();
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 });
 
-// Auto refresh
+// ====== STARTUP: hent data, start clock, start poll ======
+// Hent og render første gang
 fetchActivities();
 startClock();
-// Opdater hvert 60s (kan sættes til 120s)
+
+// Auto-opdater DOM hvert 60s (kan ændres)
 setInterval(fetchActivities, 60 * 1000);
+
+// Start polling for ændringer og hård reload hvis ændret
+pollForChanges(); // første gang
+setInterval(pollForChanges, POLL_INTERVAL_MS);
