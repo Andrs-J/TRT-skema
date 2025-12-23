@@ -1,10 +1,11 @@
-// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
-// Opdater/fuldskærm-knapper er fjernet.
+// script.js - opdateret med støtte for "Aflyst" kolonne + aflysningsårsag
+// Forventede kolonnenavne i sheet: "Aflyst" og "Aflyst_grund" (eller variationer - scriptet søger case-insensitivt)
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
-const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+const urlBase = `https://opensheet.elk.sh/${SHEET_ID}/`;
 
+// Hjælpefunktioner
 const $ = (id) => document.getElementById(id);
 const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 const now = () => new Date();
@@ -30,9 +31,9 @@ const STORAGE_KEY = "trt_last_snapshot_v1";
 const RELOAD_GRACE_MS = 10 * 1000;
 function nowTs() { return Date.now(); }
 
-async function pollForChanges() {
+async function pollForChanges(sheetName = SHEET_NAME) {
   try {
-    const fetchUrl = url + (url.includes("?") ? "&" : "?") + "_=" + nowTs();
+    const fetchUrl = urlBase + encodeURIComponent(sheetName) + (sheetName.includes("?") ? "&" : "?") + "_=" + nowTs();
     const res = await fetch(fetchUrl, { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
@@ -51,21 +52,29 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag+dato i header
+// Dato i header
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
   const el = $("currentDate");
   if (el) el.textContent = text;
+
+  // detect date change for auto-refresh
+  const todayKey = d.toISOString().slice(0,10);
+  if (window.__trt_last_date !== todayKey) {
+    window.__trt_last_date = todayKey;
+    fetchActivities(); // hent nye aktiviteter ved dataskifte
+  }
 }
 
-// HENT + PROCESS DATA
-async function fetchActivities() {
+// HENT + PROCESS DATA (nu med aflyst-felt)
+async function fetchActivities(sheetName = SHEET_NAME) {
   setStatus("Henter aktiviteter…");
   showMessage("");
+  const fetchUrl = urlBase + encodeURIComponent(sheetName) + (sheetName.includes("?") ? "&" : "?") + "_=" + nowTs();
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(fetchUrl, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error("Ugyldigt format fra sheet");
@@ -89,32 +98,50 @@ async function fetchActivities() {
   }
 }
 
+// processData: udtræk også aflyst-status og aflysningsgrund
 function processData(rows) {
   const today = new Date();
   const processed = [];
+
   rows.forEach(r => {
     const startParsed = parseHM(r.Tid);
     const endParsed = parseHM(r.Slut);
+
+    // hvis tid mangler, skippes
     if (!startParsed || !endParsed) return;
+
+    // bygge start/end ud fra dagens dato
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
     if (end < start) end.setDate(end.getDate()+1);
+
+    // find aflyst-kolonne (case-insensitiv)
+    const rawAflyst = (r.Aflyst || r.aflyst || r.Cancelled || r.canceled || r.Canceled || "").toString().trim().toLowerCase();
+    const isCancelled = ["ja","ja.","true","aflyst","cancelled","canceled"].includes(rawAflyst);
+
+    // find aflysningsgrund (flere mulige navne)
+    const rawReason = (r.Aflyst_grund || r.AflystGrund || r.AflystÅrsag || r.aflyst_grund || r.aflys || r.reason || r.Aflysningsårsag || "").toString().trim();
+
     processed.push({
       raw: r,
       start,
       end,
-      aktivitet: (r.Aktivitet || "").replace(/"/g,"").trim(),
-      sted: (r.Sted || "").replace(/"/g,"").trim(),
-      tilmelding: (r.Tilmelding || "").toLowerCase().trim()
+      aktivitet: (r.Aktivitet || r.aktivitet || "").toString().replace(/"/g,"").trim(),
+      sted: (r.Sted || r.sted || "").toString().replace(/"/g,"").trim(),
+      tilmelding: (r.Tilmelding || r.tilmelding || "").toString().toLowerCase().trim(),
+      cancelled: isCancelled,
+      cancelReason: rawReason
     });
   });
+
+  // kun aktiviteter som ikke er ekstremt gamle (behold sene aktiviteter fra i går)
   const nowTime = now();
-  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
-  all.sort((a,b) => a.start - b.start);
-  return all;
+  const filtered = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
+  filtered.sort((a,b) => a.start - b.start);
+  return filtered;
 }
 
-// Render / vis rækker
+// Render / vis rækker (inkl. cancelled)
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
@@ -131,12 +158,15 @@ function renderActivities(list) {
     const row = document.createElement("div");
     row.className = "activity-row";
     if (isPastInitial) row.classList.add("past");
+    if (item.cancelled) row.classList.add("cancelled");
 
+    // Tid
     const timeDiv = document.createElement("div");
     timeDiv.className = "time";
     timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
     row.appendChild(timeDiv);
 
+    // Midte: title/place, plus cancel-center & reason
     const tp = document.createElement("div");
     tp.className = "title-place";
 
@@ -151,25 +181,32 @@ function renderActivities(list) {
     normalInfo.appendChild(title);
     normalInfo.appendChild(place);
 
-    const pastCenter = document.createElement("div");
-    pastCenter.className = "past-center";
-    pastCenter.textContent = "Afsluttet";
+    // cancel center label (stor rød tekst)
+    const cancelCenter = document.createElement("div");
+    cancelCenter.className = "cancel-center";
+    cancelCenter.textContent = "Aflyst";
+
+    // hvis der er en aflysningsårsag, vis den under titlen (centreret)
+    const cancelReason = document.createElement("div");
+    cancelReason.className = "cancel-reason";
+    cancelReason.textContent = item.cancelReason || "";
+    // skjul som default (CSS viser kun hvis .cancelled)
+    if (!item.cancelled) cancelReason.style.display = "none";
 
     tp.appendChild(normalInfo);
-    tp.appendChild(pastCenter);
+    tp.appendChild(cancelCenter);
+    tp.appendChild(cancelReason);
     row.appendChild(tp);
 
+    // Meta: tilmelding + countdown (men hvis cancelled: ingen countdown)
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    // Tilmelding: split i label + status. Label neutral, status farvet.
     const signup = document.createElement("div");
     signup.className = "signup";
-
     const labelSpan = document.createElement("span");
     labelSpan.className = "signup-label";
     labelSpan.textContent = "Tilmelding:";
-
     const statusSpan = document.createElement("span");
     statusSpan.className = "signup-status";
 
@@ -181,7 +218,6 @@ function renderActivities(list) {
       statusSpan.textContent = " NEJ";
       statusSpan.classList.add("nej");
     } else if (t) {
-      // ukendt tekst - vis pænt
       statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
     } else {
       statusSpan.textContent = "";
@@ -191,16 +227,19 @@ function renderActivities(list) {
     signup.appendChild(statusSpan);
     meta.appendChild(signup);
 
+    // countdown (men gem hvis cancelled)
     const countdown = document.createElement("div");
     countdown.className = "countdown";
     countdown.dataset.start = String(item.start.getTime());
     countdown.dataset.end = String(item.end.getTime());
+    if (item.cancelled) countdown.style.display = "none";
     meta.appendChild(countdown);
 
     row.appendChild(meta);
     return row;
   }
 
+  // Render upcoming først
   upcoming.forEach(item => {
     const isCurr = (item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime());
     const row = createRow(item, false);
@@ -208,6 +247,7 @@ function renderActivities(list) {
     container.appendChild(row);
   });
 
+  // Past til sidst
   past.forEach(item => {
     const row = createRow(item, true);
     container.appendChild(row);
@@ -216,6 +256,7 @@ function renderActivities(list) {
   updateAllCountdowns();
 }
 
+// Opdater countdowns, håndter cancelled/past/current states
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
   const nowMs = Date.now();
@@ -228,6 +269,21 @@ function updateAllCountdowns() {
     const signupEl = row.querySelector(".meta .signup");
     const normalInfo = row.querySelector(".normal-info");
     const pastCenter = row.querySelector(".past-center");
+    const cancelCenter = row.querySelector(".cancel-center");
+
+    // Hvis rækken er cancelled: sørg for cancelled-tilstand (ingen countdown)
+    if (row.classList.contains("cancelled")) {
+      el.textContent = "";
+      el.style.display = "none";
+      if (signupEl) signupEl.style.opacity = "0.6";
+      if (normalInfo) normalInfo.style.opacity = "0.85";
+      if (cancelCenter) cancelCenter.style.display = ""; // vis "Aflyst"
+      if (pastCenter) pastCenter.style.display = "none";
+      row.classList.remove("current");
+      return;
+    } else {
+      el.style.display = ""; // normal
+    }
 
     if (nowMs >= start && nowMs <= end) {
       const diff = end - nowMs;
@@ -237,6 +293,7 @@ function updateAllCountdowns() {
       if (signupEl) signupEl.style.opacity = "";
       if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
+      if (cancelCenter) cancelCenter.style.display = "none";
     } else if (nowMs < start) {
       const diff = start - nowMs;
       el.textContent = `Starter om: ${formatDelta(diff)}`;
@@ -245,13 +302,16 @@ function updateAllCountdowns() {
       if (signupEl) signupEl.style.opacity = "";
       if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
+      if (cancelCenter) cancelCenter.style.display = "none";
     } else {
+      // past
       el.textContent = "";
       row.classList.add("past");
       row.classList.remove("current");
       if (signupEl) signupEl.style.opacity = "0.7";
       if (normalInfo) normalInfo.style.opacity = "0.8";
       if (pastCenter) pastCenter.style.display = "";
+      if (cancelCenter) cancelCenter.style.display = "none";
     }
   });
 }
@@ -276,7 +336,7 @@ function startClock() {
 
 // STARTUP: initialiser date, clock, data og polls
 updateDate();
-setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
+setInterval(updateDate, 60 * 1000);
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
