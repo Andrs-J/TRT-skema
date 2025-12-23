@@ -16,12 +16,23 @@ function fetchActivities() {
       data.forEach(row => {
         if (!row.Tid || !row.Slut) return;
 
-        // Konverter start og slut til minutter
-        const [startHour, startMinute] = row.Tid.split(":").map(Number);
-        const [endHour, endMinute] = row.Slut.split(":").map(Number);
+        // Trim for at fjerne utilsigtede mellemrum
+        const startStr = row.Tid.trim();
+        const endStr = row.Slut.trim();
+
+        const [startHour, startMinute] = startStr.split(":").map(Number);
+        const [endHour, endMinute] = endStr.split(":").map(Number);
+
+        if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+          console.warn("Ugyldig tid:", row);
+          return;
+        }
 
         const startMinutes = startHour * 60 + startMinute;
         const endMinutes = endHour * 60 + endMinute;
+
+        // Debug log for at se hvorfor aktiviteter vises eller ej
+        console.log("Aktivitet:", row.Aktivitet, "Start:", startMinutes, "Slut:", endMinutes, "Nu:", currentMinutes);
 
         // Vis kun aktiviteten, hvis vi er mellem start og slut
         if (currentMinutes < startMinutes || currentMinutes > endMinutes) return;
@@ -30,17 +41,17 @@ function fetchActivities() {
         let displayText = "";
         let statusClass = "";
 
-        if (row.Tilmelding && row.Tilmelding.toLowerCase() === "ja") {
+        if (row.Tilmelding && row.Tilmelding.toLowerCase().trim() === "ja") {
           displayText = "Ja (Ring)";
           statusClass = "tilmelding-ja";
-        } else if (row.Tilmelding && row.Tilmelding.toLowerCase() === "nej") {
+        } else if (row.Tilmelding && row.Tilmelding.toLowerCase().trim() === "nej") {
           displayText = "Nej";
           statusClass = "tilmelding-nej";
         }
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row.Tid} - ${row.Slut}</td>
+          <td>${startStr} - ${endStr}</td>
           <td>${row.Aktivitet}</td>
           <td>${row.Sted}</td>
           <td class="${statusClass}">${displayText}</td>
