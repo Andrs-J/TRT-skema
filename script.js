@@ -1,5 +1,5 @@
-// script.js - opdateret: forbi-aktiviteter viser stor "Afsluttet" men titel/sted forbliver synlige.
-// Ingen tidsangivelse for afsluttet. Poll + hård reload bevares.
+// script.js - uændret funktionalitet bortset fra at den arbejder med synlig hovedoverskrift.
+// (Filens logik er samme som den I allerede kører: henter sheet, viser rækker, fade past, poll)
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -105,7 +105,7 @@ function processData(rows) {
   return all;
 }
 
-// Render - upcoming først, past til sidst
+// Render
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
@@ -123,13 +123,11 @@ function renderActivities(list) {
     row.className = "activity-row";
     if (isPastInitial) row.classList.add("past");
 
-    // Tid
     const timeDiv = document.createElement("div");
     timeDiv.className = "time";
     timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
     row.appendChild(timeDiv);
 
-    // Midte: normal-info + past-center
     const tp = document.createElement("div");
     tp.className = "title-place";
 
@@ -152,7 +150,6 @@ function renderActivities(list) {
     tp.appendChild(pastCenter);
     row.appendChild(tp);
 
-    // Meta
     const meta = document.createElement("div");
     meta.className = "meta";
     const signup = document.createElement("div");
@@ -187,7 +184,6 @@ function renderActivities(list) {
   updateAllCountdowns();
 }
 
-// Opdater countdowns - vis kun "Slutter om" eller "Starter om" for upcoming; for past vis kun Afsluttet label (ingen tid)
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
   const nowMs = Date.now();
@@ -202,7 +198,6 @@ function updateAllCountdowns() {
     const pastCenter = row.querySelector(".past-center");
 
     if (nowMs >= start && nowMs <= end) {
-      // Aktiv nu
       const diff = end - nowMs;
       el.textContent = `Slutter om: ${formatDelta(diff)}`;
       row.classList.remove("past");
@@ -211,7 +206,6 @@ function updateAllCountdowns() {
       if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
     } else if (nowMs < start) {
-      // Ikke startet endnu
       const diff = start - nowMs;
       el.textContent = `Starter om: ${formatDelta(diff)}`;
       row.classList.remove("past");
@@ -220,12 +214,12 @@ function updateAllCountdowns() {
       if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
     } else {
-      // Past: vis kun Afsluttet label (ingen tid)
+      // Past: vis kun 'Afsluttet' label (ingen tid)
       el.textContent = "";
       row.classList.add("past");
       row.classList.remove("current");
-      if (signupEl) signupEl.style.opacity = "0.6";
-      if (normalInfo) normalInfo.style.opacity = "0.75";
+      if (signupEl) signupEl.style.opacity = "0.7";
+      if (normalInfo) normalInfo.style.opacity = "0.8";
       if (pastCenter) pastCenter.style.display = ""; // vis 'Afsluttet'
     }
   });
@@ -249,7 +243,6 @@ function startClock() {
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
-// UI events
 if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
 if ($("fsBtn")) $("fsBtn").addEventListener("click", () => { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); });
 
