@@ -2,8 +2,9 @@ const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1"; // Ret hvis dit ark hedder noget andet
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
+// Hent og vis aktiviteter
 function fetchActivities() {
-  fetch(url + '?cb=' + new Date().getTime())
+  fetch(url + '?cb=' + new Date().getTime()) // Cache-buster
     .then(res => res.json())
     .then(data => {
       const table = document.getElementById("activities");
@@ -13,7 +14,7 @@ function fetchActivities() {
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       data.forEach(row => {
-        if (!row.Tid || !row.Slut) return; // Tjek både start og slut
+        if (!row.Tid || !row.Slut) return;
 
         // Konverter start og slut til minutter
         const [startHour, startMinute] = row.Tid.split(":").map(Number);
@@ -53,12 +54,15 @@ function fetchActivities() {
 // Hent første gang når siden loader
 fetchActivities();
 
-// Auto-refresh siden hvert 1. minut (60000 ms)
-setInterval(() => {
-  window.location.reload(true); // true tvinger hard reload i nogle browsere
-}, 60000); // 1 minut
+// Opdater data hvert 2. minut
+setInterval(fetchActivities, 120000);
 
-// Ur
+// Auto-refresh hele siden hvert 1. minut
+setInterval(() => {
+  window.location.reload(true); // Hård refresh
+}, 60000);
+
+// Live-ur
 setInterval(() => {
   document.getElementById("clock").innerText =
     new Date().toLocaleTimeString("da-DK", {
