@@ -1,5 +1,5 @@
-// script.js - uændret funktionalitet bortset fra at den arbejder med synlig hovedoverskrift.
-// (Filens logik er samme som den I allerede kører: henter sheet, viser rækker, fade past, poll)
+// script.js - som før, med automatisk opdatering af dag+dato (#currentDate)
+// Dato opdateres hvert minut (nok i praksis, ændrer kun ved midnat).
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -51,7 +51,17 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Hent + process
+// Opdater dag+dato i header
+function updateDate() {
+  const d = new Date();
+  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  // Capitalize first letter (toLocale may return lowercase weekday depending on browser)
+  const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  const el = $("currentDate");
+  if (el) el.textContent = text;
+}
+
+// HENT + PROCESS DATA (uændret funktionalitet fra tidligere)
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -105,7 +115,7 @@ function processData(rows) {
   return all;
 }
 
-// Render
+// Render / vis rækker (samme som før)
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
@@ -214,13 +224,12 @@ function updateAllCountdowns() {
       if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
     } else {
-      // Past: vis kun 'Afsluttet' label (ingen tid)
       el.textContent = "";
       row.classList.add("past");
       row.classList.remove("current");
       if (signupEl) signupEl.style.opacity = "0.7";
       if (normalInfo) normalInfo.style.opacity = "0.8";
-      if (pastCenter) pastCenter.style.display = ""; // vis 'Afsluttet'
+      if (pastCenter) pastCenter.style.display = "";
     }
   });
 }
@@ -243,10 +252,13 @@ function startClock() {
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
+// UI events
 if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
 if ($("fsBtn")) $("fsBtn").addEventListener("click", () => { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); });
 
-// STARTUP
+// STARTUP: initialiser date, clock, data og polls
+updateDate();
+setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
