@@ -47,7 +47,7 @@
   --fs-card-place: 14px;         /* LOKALE - Ændr denne for at justere 'lokalet' i kortene */
 
   /* Tilmelding (signup) */
-  --fs-signup: 14px;             /* TILMELDING - Ændr denne for at ændre "Tilmelding"-tekststørrelse */
+  --fs-signup: 40px;             /* TILMELDING - Ændr denne for at ændre "Tilmelding"-tekststørrelse */
 
   /* Andre variationer */
   --next-card-radius: 12px;      /* Runding af hjørner på næste-kort */
