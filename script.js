@@ -1,5 +1,5 @@
-// script.js - som før, med automatisk opdatering af dag+dato (#currentDate)
-// Opdater/fuldskærm-knapper er fjernet, så ingen event-listeners til disse.
+// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
+// Opdater/fuldskærm-knapper er fjernet.
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -162,23 +162,33 @@ function renderActivities(list) {
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    // Tilmelding - ingen linjeskift + farveklasser
+    // Tilmelding: split i label + status. Label neutral, status farvet.
     const signup = document.createElement("div");
     signup.className = "signup";
-    const t = (item.tilmelding || "").trim();
 
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "signup-label";
+    labelSpan.textContent = "Tilmelding:";
+
+    const statusSpan = document.createElement("span");
+    statusSpan.className = "signup-status";
+
+    const t = (item.tilmelding || "").trim();
     if (t === "ja") {
-      signup.textContent = "Tilmelding: JA (Ring)";
-      signup.classList.add("ja");
+      statusSpan.textContent = " JA (Ring)";
+      statusSpan.classList.add("ja");
     } else if (t === "nej" || t === "nej.") {
-      signup.textContent = "Tilmelding: NEJ";
-      signup.classList.add("nej");
+      statusSpan.textContent = " NEJ";
+      statusSpan.classList.add("nej");
     } else if (t) {
-      signup.textContent = "Tilmelding: " + (t.charAt(0).toUpperCase() + t.slice(1));
+      // ukendt tekst - vis pænt
+      statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
     } else {
-      signup.textContent = "";
+      statusSpan.textContent = "";
     }
 
+    signup.appendChild(labelSpan);
+    signup.appendChild(statusSpan);
     meta.appendChild(signup);
 
     const countdown = document.createElement("div");
@@ -263,8 +273,6 @@ function startClock() {
   setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
-
-// UI events: Opdater/Fuldskærm fjernet (ingen listeners)
 
 // STARTUP: initialiser date, clock, data og polls
 updateDate();
