@@ -1,7 +1,6 @@
-/* style.css - komplet replacement uden Opdater/Fuldskærm-knapper
-   --------------------------------------------------------------
-   Samme styling som før, men knapregler fjernet. Brug --fs-header-size
-   i :root hvis du vil ændre størrelse for titel/dato/ur samlet.
+/* style.css - komplet replacement med neutral "Tilmelding:" og farvet status (JA/NEJ)
+   --------------------------------------------------------
+   Ændr størrelsen for titel/dato/ur via --fs-header-size i :root.
 */
 
 :root{
@@ -76,7 +75,7 @@ header{
   text-transform: capitalize;
 }
 
-/* Højre: ur (knapper fjernet) */
+/* Højre: ur + knapper (knapper fjernet) */
 .meta{
   flex:0 0 auto;
   display:flex;
@@ -187,7 +186,7 @@ main{
   text-align:right;
 }
 
-/* TILMELDING: forhindre wrap + farveklasser */
+/* TILMELDING: label neutral + status farvet; forhindre wrap */
 .activity-row .meta .signup{
   font-size:var(--fs-signup);
   font-weight:900;
@@ -196,9 +195,16 @@ main{
   overflow:visible;
 }
 
-/* FARVER: JA / NEJ */
-.activity-row .meta .signup.ja{ color: var(--danger); }
-.activity-row .meta .signup.nej{ color: var(--success); }
+/* Label (f.eks. "Tilmelding:") - neutral farve */
+.activity-row .meta .signup .signup-label{
+  color: var(--muted);
+  margin-right:6px;
+  font-weight:700;
+}
+
+/* Status (JA/NEJ) - farvet */
+.activity-row .meta .signup .signup-status.ja{ color: var(--danger); }
+.activity-row .meta .signup .signup-status.nej{ color: var(--success); }
 
 /* Countdown */
 .activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
