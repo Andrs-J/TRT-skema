@@ -1,4 +1,4 @@
-const SHEET_ID = "INDSÆT_DIT_SHEET_ID_HER";
+const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1"; // ret hvis dit ark hedder noget andet
 
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
