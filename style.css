@@ -1,4 +1,7 @@
-/* style.css - opdateret for bedre centering, proportioner og grid-layout */
+/* style.css - kantnær layout (næsten kant-til-kant) */
+/* Kommentar: Denne version gør infoskærmens kort næsten kant-til-kant
+   med en lille 16px gutter på hver side så skygger og afrundede hjørner ser pæne ud. */
+
 :root{
   --bg:#041021;
   --panel:#072033;
@@ -10,6 +13,7 @@
 }
 
 *{box-sizing:border-box}
+html,body { height:100%; }
 body{
   margin:0;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
@@ -25,30 +29,35 @@ header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:18px 40px;
+  padding:16px 16px; /* small gutter i header også */
   background:rgba(255,255,255,0.02);
   border-bottom:1px solid rgba(255,255,255,0.03);
 }
+.brand{
+  display:flex;
+  flex-direction:column;
+}
 .brand h1{
   margin:0;
-  font-size:36px; /* lidt mindre end før for balance */
+  font-size:32px; /* passende stor titel */
   letter-spacing:0.4px;
 }
 .brand .sub{
-  font-size:14px;
+  font-size:13px;
   color:var(--muted);
-  margin-top:6px;
+  margin-top:4px;
 }
 .meta{
   display:flex;
-  gap:14px;
+  gap:12px;
   align-items:center;
 }
 .clock{
-  font-size:40px; /* stort ur, men ikke kæmpe */
+  font-size:36px;
   font-weight:700;
   color:var(--accent);
 }
+/* Controls */
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
@@ -59,8 +68,17 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* Main hero */
-main{flex:1; padding:28px 40px; display:flex; flex-direction:column; gap:18px; align-items:center;}
+/* MAIN - næsten kant til kant med lille gutter */
+main{
+  flex:1;
+  padding:20px 16px; /* 16px gutter til siderne */
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  align-items:stretch;
+}
+
+/* HERO / NÆSTE AKTIVITET - centreret i bredden men fylder stort set hele skærmen */
 .hero{
   display:flex;
   flex-direction:column;
@@ -69,41 +87,45 @@ main{flex:1; padding:28px 40px; display:flex; flex-direction:column; gap:18px; a
   width:100%;
 }
 
-/* Næste aktivitet kort - centreret og proportionelt */
+/* Næste aktivitet kort - fylder bredt */
 .next-card{
-  width:100%;
-  max-width:1200px;               /* begræns max bredde */
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  width: calc(100% - 32px); /* 16px gutter hver side */
+  max-width: none;
+  margin: 0 auto;
+  padding:20px 24px;
   border-radius:12px;
-  padding:22px 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   display:flex;
-  gap:24px;
+  gap:20px;
   align-items:center;
   justify-content:flex-start;
   box-shadow: 0 8px 30px rgba(0,0,0,0.45);
-  margin:0 auto;                  /* CENTRERER på skærmen */
 }
+
+/* Time-sektionen */
 .next-card .time{
-  min-width:260px;                /* begrænser hvor bred tidsektionen bliver */
-  font-size:84px;                 /* stor men ikke kæmpe */
+  min-width:240px;
+  font-size:72px; /* stor men ikke overvældende */
   font-weight:800;
   color:var(--accent);
   line-height:0.95;
   text-align:left;
 }
+
+/* Hovedinformation i kortet */
 .next-card .main-info{
   flex:1;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
 }
 .next-card .activity{
-  font-size:42px;
+  font-size:40px;
   font-weight:800;
   margin:0;
 }
 .next-card .place{
-  font-size:18px;
+  font-size:16px;
   color:var(--muted);
 }
 .next-card .meta-right{
@@ -111,44 +133,49 @@ main{flex:1; padding:28px 40px; display:flex; flex-direction:column; gap:18px; a
   flex-direction:column;
   align-items:flex-end;
   gap:6px;
-  min-width:180px;
+  min-width:160px;
 }
-.next-card .signup{ margin-top:8px; font-weight:800; font-size:16px; }
+.next-card .signup{ margin-top:8px; font-weight:800; font-size:14px; }
 .next-card .signup.ja{ color:var(--danger) }
 .next-card .signup.nej{ color:var(--success) }
-.countdown{ font-size:14px; color:var(--muted); }
+.countdown{ font-size:13px; color:var(--muted); }
 
-/* Store kort grid for de næste aktiviteter */
+/* Stor kort-grid for kommende aktiviteter */
 .big-activities{
-  width:100%;
-  max-width:1200px;
+  width: calc(100% - 32px);
+  max-width: none;
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* responsivt grid */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap:14px;
   margin:0 auto;
 }
+
+/* Aktivitet kort */
 .activity-card{
   background:var(--card);
   border-radius:10px;
-  padding:18px 20px;
+  padding:16px 18px;
   color: #f3fbff;
   box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-  min-height:110px;
+  min-height:100px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 .activity-card .time{
-  font-size:20px;
+  font-size:18px;
   font-weight:700;
   color:var(--accent);
 }
 .activity-card .title{
-  font-size:22px;
+  font-size:20px;
   font-weight:800;
-  margin-top:6px;
+  margin-top:8px;
 }
 .activity-card .place{
   margin-top:6px;
   color:var(--muted);
-  font-size:15px;
+  font-size:14px;
 }
 .activity-card.current{
   outline: 3px solid rgba(255,209,102,0.12);
@@ -158,27 +185,30 @@ main{flex:1; padding:28px 40px; display:flex; flex-direction:column; gap:18px; a
 /* Message area */
 .message{
   color:var(--muted);
-  font-size:16px;
+  font-size:15px;
   text-align:center;
 }
 
 /* Footer */
 footer{
-  padding:12px 28px;
+  padding:12px 16px;
   color:var(--muted);
-  font-size:14px;
+  font-size:13px;
   border-top:1px solid rgba(255,255,255,0.02);
 }
 
 /* Hjælpeklasser */
 .visually-hidden{position:absolute !important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
 
-/* Responsiv: skaler ned på small devices */
+/* Responsiv: juster tekst og layout på small devices */
 @media (max-width:900px){
-  .brand h1{ font-size:26px; }
-  .clock{ font-size:28px; }
-  .next-card { padding:16px; flex-direction:column; align-items:flex-start; gap:12px; }
+  .brand h1{ font-size:24px; }
+  .clock{ font-size:24px; }
+  .next-card { padding:14px; flex-direction:column; align-items:flex-start; gap:12px; }
   .next-card .time{ font-size:48px; min-width:unset; }
   .next-card .activity{ font-size:20px; }
-  .big-activities{ grid-template-columns: 1fr; gap:12px; }
+  .big-activities{ grid-template-columns: 1fr; gap:12px; width: calc(100% - 24px); }
+  .activity-card{ min-height:80px; padding:12px; }
 }
+
+/* Ekstra: hvis du senere vil gå helt kant-til-kant, fjern border-radius og juster next-card width til 100vw */
