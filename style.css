@@ -1,6 +1,6 @@
-/* style.css - større header / hovedtekst for læsning på afstand
-   -------------------------------------------------------------
-   Justér størrelser i :root (øverst).
+/* style.css - header med dag+dato midt i toppen + række-layout for aktiviteter
+   -------------------------------------------------------------------------
+   For at gøre dato/tekst større/nemmere at justere: se variabler i :root.
 */
 
 :root{
@@ -13,17 +13,16 @@
   /* Side/gutter */
   --gutter-side: 12px;
 
-  /* OVERSKRIFTER & UR - Ændr disse for at gøre alt større/mindre */
-  --fs-brand-title: 64px;   /* "Aktiviteter – Udsigten" */
-  --fs-brand-sub: 24px;     /* "Tværfagligt Rehabiliteringsteam (TRT)" */
-  --fs-clock: 96px;         /* Klokken øverst til højre */
-  --fs-main-heading: 44px;  /* "Aktiviteter i dag" */
+  /* STØRRELSER - justér disse for at gøre alt større/mindre */
+  --fs-brand-title: 64px;    /* "Aktiviteter – Udsigten" */
+  --fs-date: 32px;           /* Dag + dato (midt i header) */
+  --fs-clock: 96px;          /* Klokken øverst til højre */
 
-  /* Rækker (behold store rækker fra før) */
+  /* Rækker */
   --row-gap: 18px;
   --time-col-width: 320px;
   --meta-col-width: 260px;
-  --fs-row-time: 44px;
+  --fs-row-time: 28px;
   --fs-row-title: 44px;
   --fs-row-place: 26px;
   --fs-signup: 24px;
@@ -43,36 +42,42 @@ body{
   flex-direction:column;
 }
 
-/* HEADER: venstre brand (stor) og højre clock (meget stor) */
+/* HEADER - layout: brand (left) | date (center) | meta (right) */
 header{
   display:flex;
-  justify-content:space-between;
   align-items:center;
   padding:18px var(--gutter-side);
   background:rgba(255,255,255,0.02);
   border-bottom:1px solid rgba(255,255,255,0.03);
+  gap:12px;
 }
-.brand{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
+
+/* VENSTRE: brand */
+.brand{ flex: 0 0 auto; }
 .brand h1{
   margin:0;
   font-size:var(--fs-brand-title);
   font-weight:900;
   letter-spacing:0.4px;
 }
-.brand .sub{
-  font-size:var(--fs-brand-sub);
-  color:var(--muted);
+
+/* MIDTEN: Dag + dato (centret) */
+.current-date{
+  flex:1 1 auto;             /* fylder til midten */
+  text-align:center;
+  font-size:var(--fs-date);
+  font-weight:700;
+  color:#ffffff;
+  text-transform: capitalize; /* sørger for stort begyndelsesbogstav på ugedag */
 }
+
+/* HØJRE: meta (ur + knapper) */
 .meta{
+  flex:0 0 auto;
   display:flex;
   gap:18px;
   align-items:center;
 }
-/* MEGET STORT UR - justér --fs-clock */
 .clock{
   font-size:var(--fs-clock);
   font-weight:800;
@@ -81,7 +86,7 @@ header{
   padding-right:8px;
 }
 
-/* Kontrolknapper (mindre) */
+/* Kontrolknapper */
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
@@ -93,7 +98,7 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* MAIN */
+/* MAIN / HERO */
 main{
   flex:1;
   padding:20px var(--gutter-side);
@@ -103,17 +108,7 @@ main{
   align-items:stretch;
 }
 
-/* VISIBLE OG STOR HOVED-TEKST ("Aktiviteter i dag") */
-.main-heading{
-  margin: 4px 0 8px;
-  text-align:center;
-  font-size:var(--fs-main-heading);
-  font-weight:800;
-  color:#ffffff;
-  letter-spacing:0.3px;
-}
-
-/* AKTIVITETSLISTE (RÆKKER) */
+/* AKTIVITETSLISTE */
 .activities-list{
   width: calc(100% - (var(--gutter-side) * 2));
   display:flex;
@@ -136,7 +131,7 @@ main{
   transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* VENSTRE */
+/* VENSTRE: tid */
 .activity-row .time{
   width: var(--time-col-width);
   min-width:140px;
@@ -146,21 +141,21 @@ main{
   letter-spacing:0.6px;
 }
 
-/* MIDTEN */
+/* MIDTEN: titel + sted */
 .activity-row .title-place{ flex:1; display:flex; flex-direction:column; gap:6px; position:relative; }
 .activity-row .normal-info{ z-index:1; display:flex; flex-direction:column; gap:6px; }
 .activity-row .title{ font-size:var(--fs-row-title); font-weight:900; line-height:1.02; }
 .activity-row .place{ font-size:var(--fs-row-place); color:var(--muted); opacity:0.95; }
 
-/* PAST center - stor label (vises kun når .past) */
+/* Past-center (stor Afsluttet label, vises kun for past) */
 .activity-row .past-center{ display:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:100%; text-align:center; font-size:var(--fs-past-label); font-weight:900; color:#ffffff; z-index:2; pointer-events:none; text-shadow: 0 3px 12px rgba(0,0,0,0.6); opacity:0.95; }
 
-/* HØJRE META */
+/* HØJRE: meta */
 .activity-row .meta{ width: var(--meta-col-width); min-width:140px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; text-align:right; }
 .activity-row .meta .signup{ font-size:var(--fs-signup); font-weight:900; }
 .activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
 
-/* Past-state: afdæmp men behold synligt indhold */
+/* Past: afdæmp men behold synligt indhold */
 .activity-row.past{ opacity: 0.65; filter: grayscale(35%); }
 .activity-row.past .normal-info{ opacity:0.75; }
 .activity-row.past .meta{ opacity:0.65; }
@@ -173,13 +168,12 @@ main{
 .message{ color:var(--muted); font-size:16px; text-align:center; }
 footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* RESPONSIV til mindre skærme */
+/* RESPONSIV - til mindre skærme skaleres størrelser ned */
 @media (max-width:1200px){
   :root{
     --fs-brand-title: 48px;
-    --fs-brand-sub: 20px;
+    --fs-date: 28px;
     --fs-clock: 72px;
-    --fs-main-heading: 36px;
     --time-col-width: 260px;
     --meta-col-width: 200px;
     --fs-row-time: 24px;
@@ -192,9 +186,8 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
 @media (max-width:900px){
   :root{
     --fs-brand-title: 28px;
-    --fs-brand-sub: 14px;
+    --fs-date: 20px;
     --fs-clock: 40px;
-    --fs-main-heading: 20px;
     --time-col-width: 120px;
     --meta-col-width: 110px;
     --fs-row-time: 18px;
@@ -205,4 +198,5 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
     --gutter-side: 10px;
   }
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
+  .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
