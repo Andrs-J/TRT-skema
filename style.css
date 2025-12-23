@@ -1,12 +1,22 @@
-/* style.css - kantnær layout (næsten kant-til-kant)
+/* style.css - fuldt oversat/kommenteret på dansk
    ------------------------------------------------
-   Dansk kommenteret version med tydelige labels så du nemt kan
-   justere typografi, afstande og layout uden at lede i hele filen.
+   Denne version er lavet så du let kan finde og ændre:
+   - Lokalet (sted) tekststørrelse
+   - Tilmelding (signup) tekststørrelse
+   - Øvrige hoved-typografier og side-gutter
 
-   TIP: For at ændre størrelser og afstande, justér værdierne i :root-sektionen.
+   GUIDE: Ændr størrelser i :root-sektionen (markeret "Ændr her") for at påvirke hele tavlen.
 */
 
-/* ========== HOVEDVARIABLER (Ændr her for at justere udseendet) ========== */
+/* =========================
+   HOVEDVARIABLER (Ændr her)
+   =========================
+   Ændr værdier her for at justere udseendet konsekvent.
+   - --gutter-side: afstand til venstre/højre (brug 0 for kant-til-kant)
+   - --fs-next-place: "Lokalet" i det store Næste-kort
+   - --fs-card-place: "Lokalet" i hvert lille aktivitet-kort
+   - --fs-signup: "Tilmelding" teksten i Næste-kortet (og kan bruges i kort)
+*/
 :root{
   /* Farver */
   --bg: #041021;
@@ -17,27 +27,36 @@
   --success: #28a745;
   --danger: #ff6b6b;
 
-  /* Typografi - hovedstørrelser
-     Ændr disse for at justere tekststørrelser på hele tavlen. */
-  --fs-brand-title: 32px;       /* Hovedtitel i header (Aktiviteter – Udsigten) */
-  --fs-brand-sub: 13px;         /* Undertekst i header (TRT) */
-  --fs-clock: 36px;             /* Størrelse på uret øverst */
-  --fs-next-time: 72px;         /* Tid i "Næste aktivitet"-kortet */
-  --fs-next-activity: 40px;     /* Aktivitetstitel i "Næste aktivitet"-kortet */
-  --fs-next-place: 16px;        /* Sted-tekst i næste-kortet */
-  --fs-countdown: 13px;         /* Nedtælling i næste-kortet */
+  /* Layout */
+  --gutter-side: 16px;           /* <-- Ændr denne for at mindske/øge whitespace sidekanter */
 
-  --fs-card-time: 18px;         /* Tid i hvert aktivitet-kort (under) */
-  --fs-card-title: 20px;        /* Titel i hvert aktivitet-kort */
-  --fs-card-place: 14px;        /* Sted i hvert aktivitet-kort */
+  /* Typografi - hovedstørrelser (Ændr her for at øge/reducere tekster) */
+  --fs-brand-title: 32px;        /* Header: "Aktiviteter – Udsigten" */
+  --fs-brand-sub: 13px;          /* Header undertekst (TRT) */
+  --fs-clock: 36px;              /* Ur øverst til højre */
 
-  /* Layout / spacing */
-  --gutter-side: 16px;          /* Gutter (luft) til venstre/højre - ændr for mere/ mindre whitespace */
-  --next-card-radius: 12px;     /* Runding af hjørner på det store kort */
-  --card-gap: 14px;             /* Afstand mellem kort i grid */
+  /* Næste-kort (stort kort øverst) */
+  --fs-next-time: 72px;          /* Tid i venstre side af næste-kortet */
+  --fs-next-activity: 40px;      /* Aktivitetens titel i næste-kortet */
+  --fs-next-place: 16px;         /* LOKALE - Ændr denne for at justere 'lokalet' her */
+  --fs-countdown: 13px;          /* Nedtælling i næste-kortet */
+
+  /* Kort i grid (de store kort under) */
+  --fs-card-time: 18px;          /* Tid i hvert aktivitet-kort */
+  --fs-card-title: 20px;         /* Titel i kortene */
+  --fs-card-place: 14px;         /* LOKALE - Ændr denne for at justere 'lokalet' i kortene */
+
+  /* Tilmelding (signup) */
+  --fs-signup: 14px;             /* TILMELDING - Ændr denne for at ændre "Tilmelding"-tekststørrelse */
+
+  /* Andre variationer */
+  --next-card-radius: 12px;      /* Runding af hjørner på næste-kort */
+  --card-gap: 14px;              /* Afstand mellem kort i grid */
 }
 
-/* ========== GENERELT ========== */
+/* =========================
+   GENERELT
+   ========================= */
 *{box-sizing:border-box}
 html,body { height:100%; }
 body{
@@ -50,13 +69,15 @@ body{
   flex-direction:column;
 }
 
-/* ========== HEADER ========== */
-/* Ændre header padding: header{ padding:16px 16px; } */
+/* =========================
+   HEADER
+   ========================= */
+/* Header padding bruger --gutter-side så header følger samme sidegutter som indhold */
 header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:16px var(--gutter-side); /* bruger --gutter-side så header følger side-gutter */
+  padding:16px var(--gutter-side);
   background:rgba(255,255,255,0.02);
   border-bottom:1px solid rgba(255,255,255,0.03);
 }
@@ -64,7 +85,6 @@ header{
   display:flex;
   flex-direction:column;
 }
-/* Ændr hovedtitel-størrelse via variablen --fs-brand-title */
 .brand h1{
   margin:0;
   font-size:var(--fs-brand-title);
@@ -80,14 +100,13 @@ header{
   gap:12px;
   align-items:center;
 }
-/* Ændr ur-størrelse via --fs-clock */
 .clock{
   font-size:var(--fs-clock);
   font-weight:700;
   color:var(--accent);
 }
 
-/* Kontrolknapper (Opdater/Fuldskærm) */
+/* Kontrolknapper (Opdater / Fuldskærm) */
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
@@ -98,17 +117,18 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* ========== MAIN / HERO ========== */
-/* For at ændre side-gutter for hele siden, juster --gutter-side i :root */
+/* =========================
+   MAIN / HERO
+   ========================= */
+/* main bruger --gutter-side for at styre den horisontale luft */
 main{
   flex:1;
-  padding:20px var(--gutter-side); /* bruger variabel for enkel justering */
+  padding:20px var(--gutter-side);
   display:flex;
   flex-direction:column;
   gap:18px;
   align-items:stretch;
 }
-
 .hero{
   display:flex;
   flex-direction:column;
@@ -117,8 +137,10 @@ main{
   width:100%;
 }
 
-/* ========== NÆSTE AKTIVITET - STORT KORT ========== */
-/* Ændr størrelse på tid/tekst i :root (--fs-next-time, --fs-next-activity osv.) */
+/* =========================
+   NÆSTE AKTIVITET - STORT KORT
+   ========================= */
+/* Dette store kort fylder næsten fra kant til kant men bevarer gutter */
 .next-card{
   width: calc(100% - (var(--gutter-side) * 2));
   max-width: none;
@@ -133,7 +155,7 @@ main{
   box-shadow: 0 8px 30px rgba(0,0,0,0.45);
 }
 
-/* Tid (venstre del af næste-kort) */
+/* Tid (venstre del) - Ændr --fs-next-time hvis du vil ændre tidens størrelse */
 .next-card .time{
   min-width:240px;
   font-size:var(--fs-next-time);
@@ -143,7 +165,7 @@ main{
   text-align:left;
 }
 
-/* Hoved-info (midten) */
+/* Hoved-information (midt) */
 .next-card .main-info{
   flex:1;
   display:flex;
@@ -155,12 +177,13 @@ main{
   font-weight:800;
   margin:0;
 }
+/* LOKALE: tekststørrelse for "lokalet" i næste-kortet (Ændr --fs-next-place) */
 .next-card .place{
   font-size:var(--fs-next-place);
   color:var(--muted);
 }
 
-/* Metainfo (højre del i næste-kort) */
+/* Meta / højre side (tilmelding + countdown) */
 .next-card .meta-right{
   display:flex;
   flex-direction:column;
@@ -168,19 +191,22 @@ main{
   gap:6px;
   min-width:160px;
 }
+/* TILMELDING: ændr --fs-signup for at styre denne tekst */
 .next-card .signup{
   margin-top:8px;
   font-weight:800;
-  font-size:14px;
+  font-size:var(--fs-signup);
 }
 .next-card .signup.ja{ color:var(--danger); }
 .next-card .signup.nej{ color:var(--success); }
 
-/* Nedtælling */
+/* Nedtælling i næste-kort */
 .countdown{ font-size:var(--fs-countdown); color:var(--muted); }
 
-/* ========== KOMMENDE AKTIVITETER - GRID ========== */
-/* Grid-bredde følger side-gutter; kort bruger variabler for typografi */
+/* =========================
+   KOMMENDE AKTIVITETER - GRID
+   ========================= */
+/* Grid-bredde følger side-gutter; ændr --card-gap for afstand mellem kort */
 .big-activities{
   width: calc(100% - (var(--gutter-side) * 2));
   max-width: none;
@@ -190,7 +216,7 @@ main{
   margin:0 auto;
 }
 
-/* Individuelt kort */
+/* Individuelt aktivitet-kort */
 .activity-card{
   background:var(--card);
   border-radius:10px;
@@ -212,6 +238,7 @@ main{
   font-weight:800;
   margin-top:8px;
 }
+/* LOKALE: tekststørrelse i aktivitet-kort (Ændr --fs-card-place) */
 .activity-card .place{
   margin-top:6px;
   color:var(--muted);
@@ -222,13 +249,14 @@ main{
   transform: translateY(-2px);
 }
 
-/* ========== BESKED & FOOTER ========== */
+/* =========================
+   BESKED & FOOTER
+   ========================= */
 .message{
   color:var(--muted);
   font-size:15px;
   text-align:center;
 }
-
 footer{
   padding:12px var(--gutter-side);
   color:var(--muted);
@@ -236,18 +264,19 @@ footer{
   border-top:1px solid rgba(255,255,255,0.02);
 }
 
-/* ========== HJÆLPEKLASSER & RESPONSIV ========== */
-/* Skjult tekst (tilgængelighed) */
+/* =========================
+   HJÆLPEKLASSER & RESPONSIV
+   ========================= */
 .visually-hidden{position:absolute !important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
 
-/* Responsiv til mindre skærme - ændr værdier her hvis du ønsker anderledes skalerings-regler */
+/* Mobile overrides: ændringer i variabler til små skærme */
 @media (max-width:900px){
   :root{
-    /* Du kan override variabler for mobile hvis ønsket */
     --fs-next-time: 48px;
     --fs-next-activity: 20px;
     --fs-brand-title: 24px;
     --fs-clock: 24px;
+    --gutter-side: 12px;
   }
   .brand h1{ font-size:var(--fs-brand-title); }
   .clock{ font-size:var(--fs-clock); }
@@ -258,13 +287,19 @@ footer{
   .activity-card{ min-height:80px; padding:12px; }
 }
 
-/* ========== HURTIG GUIDE - HVOR ÆNDRER DU HVAD? ==========
+/* =========================
+   HURTIG GUIDE - HVOR ÆNDRER DU HVAD?
+   =========================
    - Side-gutter (venstre/højre afstand):        --gutter-side
    - Runding af næste-kort:                      --next-card-radius
-   - Størrelser (titler, ur, tid i næste-kort):  --fs-brand-title, --fs-clock, --fs-next-time, --fs-next-activity
-   - Kort-typografi (liste under):               --fs-card-time, --fs-card-title, --fs-card-place
+   - Tid i næste-kort:                           --fs-next-time
+   - Aktivitetstitel i næste-kort:               --fs-next-activity
+   - Lokale i næste-kort:                        --fs-next-place   <-- Ændr her for 'lokalet' i næste-kort
+   - Tilmelding (signup):                        --fs-signup       <-- Ændr her for 'tilmelding'
+   - Tid i aktivitet-kort:                       --fs-card-time
+   - Titel i aktivitet-kort:                     --fs-card-title
+   - Lokale i aktivitet-kort:                    --fs-card-place   <-- Ændr her for 'lokalet' i kortene
    - Afstand mellem kort i grid:                 --card-gap
 
-   Ændringer i :root påvirker hele layoutet konsekvent. Hvis du vil have
-   meget større/små tekster for din specifikke skærm, justér værdierne der.
+   Ændringer i :root er den nemmeste og hurtigste måde at styre udseendet globalt.
 */
