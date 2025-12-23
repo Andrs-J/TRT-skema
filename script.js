@@ -1,4 +1,5 @@
-// script.js - opdateret så nuværende aktivitet ikke vises som duplikat i kortlisten
+// script.js - opdateret: fjerner 'Næste aktivitet' og viser alle aktiviteter som rækker
+// Bevarer polling / hard reload hver 60s
 
 // ======= KONFIGURATION =======
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
@@ -39,10 +40,7 @@ async function pollForChanges() {
     const data = await res.json();
     const snapshot = JSON.stringify(data);
     const last = localStorage.getItem(STORAGE_KEY);
-    if (last && last !== snapshot) {
-      triggerHardReload();
-      return;
-    }
+    if (last && last !== snapshot) { triggerHardReload(); return; }
     if (!last) try { localStorage.setItem(STORAGE_KEY, snapshot); } catch(e) {}
   } catch (err) { console.error("Poll-fejl:", err); }
 }
@@ -55,7 +53,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// ======= HENT & RENDER =======
+// ======= HENT OG RENDER (RÆKKE-LAYOUT) =======
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -110,113 +108,106 @@ function processData(rows) {
 }
 
 function renderActivities(list) {
+  const container = $("activities");
+  if (!container) return;
+  container.innerHTML = "";
+
   const nowTime = now();
+
+  // Find nuværende (hvis nogen) for highlight
   let current = null;
-  let next = null;
   for (const item of list) {
     if (item.start <= nowTime && item.end >= nowTime) { current = item; break; }
   }
-  if (!current) next = list.find(item => item.start > nowTime);
-  else {
-    const idx = list.indexOf(current);
-    next = list[idx + 1] || null;
-  }
 
-  // Opdater Næste aktivitet kort (stort)
-  const nextCard = $("nextCard");
-  if (nextCard) {
-    const timeEl = nextCard.querySelector(".time");
-    const activityEl = nextCard.querySelector(".activity");
-    const placeEl = nextCard.querySelector(".place");
-    const signupEl = nextCard.querySelector(".signup");
-    if (current) {
-      if (timeEl) timeEl.textContent = `${formatTime(current.start)} - ${formatTime(current.end)}`;
-      if (activityEl) activityEl.textContent = current.aktivitet || "—";
-      if (placeEl) placeEl.textContent = current.sted || "";
-      if (signupEl) {
-        if (current.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
-        else if (current.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
-        else { signupEl.textContent = current.tilmelding || ""; signupEl.className = "signup"; }
-      }
-      startCountdown(current.end, "Slutter om: ", $("countdown"));
-    } else if (next) {
-      if (timeEl) timeEl.textContent = `${formatTime(next.start)} - ${formatTime(next.end)}`;
-      if (activityEl) activityEl.textContent = next.aktivitet || "—";
-      if (placeEl) placeEl.textContent = next.sted || "";
-      if (signupEl) {
-        if (next.tilmelding === "ja") { signupEl.textContent = "Tilmelding: JA (Ring)"; signupEl.className = "signup ja"; }
-        else if (next.tilmelding === "nej") { signupEl.textContent = "Tilmelding: NEJ"; signupEl.className = "signup nej"; }
-        else { signupEl.textContent = next.tilmelding || ""; signupEl.className = "signup"; }
-      }
-      startCountdown(next.start, "Starter om: ", $("countdown"));
-    } else {
-      if (timeEl) timeEl.textContent = "--:--";
-      if (activityEl) activityEl.textContent = "Ingen flere aktiviteter i dag";
-      if (placeEl) placeEl.textContent = "";
-      if ($("countdown")) $("countdown").textContent = "";
-      stopCountdown();
-    }
-  }
+  // Vis alle aktiviteter som rækker. Hver række viser: tid | titel + sted | tilmelding + nedtælling
+  list.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "activity-row";
+    if (current && item === current) row.classList.add("current");
 
-  // Vis kommende aktiviteter som store kort.
-  // VIGTIGT: hvis current findes, spring første aktivitet (current) over så den ikke vises dobbelt.
-  const container = $("bigActivities");
-  if (!container) return;
-  container.innerHTML = "";
-  const startIndex = current ? 1 : 0;
-  const display = list.slice(startIndex, startIndex + 8); // maks 8 kort
-  display.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "activity-card" + ((item === current) ? " current" : "");
-    const time = document.createElement("div");
-    time.className = "time";
-    time.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
+    // Tid
+    const timeDiv = document.createElement("div");
+    timeDiv.className = "time";
+    timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
+    row.appendChild(timeDiv);
+
+    // Titel + sted
+    const tp = document.createElement("div");
+    tp.className = "title-place";
     const title = document.createElement("div");
     title.className = "title";
     title.textContent = item.aktivitet || "—";
     const place = document.createElement("div");
     place.className = "place";
     place.textContent = item.sted || "";
-    card.appendChild(time);
-    card.appendChild(title);
-    card.appendChild(place);
-    container.appendChild(card);
+    tp.appendChild(title);
+    tp.appendChild(place);
+    row.appendChild(tp);
+
+    // Meta: tilmelding + countdown
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const signup = document.createElement("div");
+    signup.className = "signup";
+    if (item.tilmelding === "ja") signup.textContent = "Tilmelding: JA (Ring)";
+    else if (item.tilmelding === "nej" || item.tilmelding === "nej.") signup.textContent = "Tilmelding: NEJ";
+    else signup.textContent = item.tilmelding || "";
+    meta.appendChild(signup);
+
+    const countdown = document.createElement("div");
+    countdown.className = "countdown";
+    // Gem tider som data-attributter (ms) så opdaterings-loop kan opdatere alle countdowns
+    countdown.dataset.start = String(item.start.getTime());
+    countdown.dataset.end = String(item.end.getTime());
+    meta.appendChild(countdown);
+
+    row.appendChild(meta);
+    container.appendChild(row);
+  });
+
+  // Start/Opdater countdown displays
+  updateAllCountdowns();
+}
+
+// Opdaterer alle countdown-elementer på siden (kører regelmæssigt)
+function updateAllCountdowns() {
+  const els = document.querySelectorAll(".activity-row .countdown");
+  const nowTime = Date.now();
+  els.forEach(el => {
+    const start = parseInt(el.dataset.start, 10);
+    const end = parseInt(el.dataset.end, 10);
+    if (isNaN(start) || isNaN(end)) { el.textContent = ""; return; }
+
+    if (nowTime >= start && nowTime <= end) {
+      // Aktiv nu: vis hvor længe den slutter om
+      const diff = end - nowTime;
+      el.textContent = `Slutter om: ${formatDelta(diff)}`;
+    } else if (nowTime < start) {
+      // Ikke startet: vis hvor længe til start
+      const diff = start - nowTime;
+      el.textContent = `Starter om: ${formatDelta(diff)}`;
+    } else {
+      el.textContent = ""; // allerede slut
+    }
   });
 }
 
-function clearActivities() {
-  if ($("bigActivities")) $("bigActivities").innerHTML = "";
-  const nc = $("nextCard");
-  if (nc) {
-    const activityEl = nc.querySelector(".activity");
-    const timeEl = nc.querySelector(".time");
-    if (activityEl) activityEl.textContent = "Ingen data";
-    if (timeEl) timeEl.textContent = "--:--";
+// Hjælper: formater ms til "X t Y min" eller "Z min"
+function formatDelta(ms) {
+  if (ms <= 0) return "0 min";
+  const mins = Math.floor(ms / 60000);
+  if (mins >= 60) {
+    const hours = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return rem === 0 ? `${hours} t` : `${hours} t ${rem} min`;
   }
-  if ($("countdown")) $("countdown").textContent = "";
+  return `${mins} min`;
 }
 
-// Countdown
-let countdownInterval = null;
-function startCountdown(targetDate, prefix, el) {
-  stopCountdown();
-  if (!el) return;
-  function tick() {
-    const d = targetDate - new Date();
-    if (d <= 0) { el.textContent = prefix + "0 min"; stopCountdown(); return; }
-    const mins = Math.floor(d / 60000);
-    const secs = Math.floor((d % 60000) / 1000);
-    if (mins > 60) {
-      const hours = Math.floor(mins / 60);
-      el.textContent = `${prefix}${hours} t ${mins % 60} min`;
-    } else {
-      el.textContent = `${prefix}${mins} min ${secs} s`;
-    }
-  }
-  tick();
-  countdownInterval = setInterval(tick, 1000);
+function clearActivities() {
+  if ($("activities")) $("activities").innerHTML = "";
 }
-function stopCountdown() { if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; } }
 
 // Clock
 function startClock() {
@@ -228,9 +219,10 @@ function startClock() {
 if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
 if ($("fsBtn")) $("fsBtn").addEventListener("click", () => { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); });
 
-// STARTUP
+// STARTUP & INTERVALS
 fetchActivities();
 startClock();
-setInterval(fetchActivities, 60 * 1000);
+setInterval(fetchActivities, 60 * 1000);      // opdater DOM hvert minut
+setInterval(updateAllCountdowns, 1000);       // opdater countdowns hvert sekund
 pollForChanges();
 setInterval(pollForChanges, POLL_INTERVAL_MS);
