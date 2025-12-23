@@ -2,44 +2,53 @@ const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1"; // Ret hvis dit ark hedder noget andet
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
+// Hent og vis aktiviteter
 function fetchActivities() {
-  fetch(url)
+  fetch(url + '?cb=' + new Date().getTime()) // Cache-buster
     .then(res => res.json())
     .then(data => {
       const table = document.getElementById("activities");
       table.innerHTML = "";
 
       const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       data.forEach(row => {
-        if (!row.Tid || !row.Slut) return; // Tjek både start og slut
+        if (!row.Tid || !row.Slut) return;
 
-        // Konverter start og slut til minutter
-        const [startHour, startMinute] = row.Tid.split(":").map(Number);
-        const [endHour, endMinute] = row.Slut.split(":").map(Number);
+        // Trim for at fjerne utilsigtede mellemrum
+        const startStr = row.Tid.trim();
+        const endStr = row.Slut.trim();
 
-        const startMinutes = startHour * 60 + startMinute;
-        const endMinutes = endHour * 60 + endMinute;
+        const [startHour, startMinute] = startStr.split(":").map(Number);
+        const [endHour, endMinute] = endStr.split(":").map(Number);
 
-        // Vis kun aktiviteten, hvis vi er mellem start og slut
-        if (currentMinutes < startMinutes || currentMinutes > endMinutes) return;
+        if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+          console.warn("Ugyldig tid:", row);
+          return;
+        }
+
+        // Lav Date-objekter for start og slut i dag
+        const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+        const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
+
+        // Tjek om aktiviteten er i gang
+        if (now < startTime || now > endTime) return;
 
         // Tilmelding: Ja (Ring) = rød, Nej = grøn
         let displayText = "";
         let statusClass = "";
 
-        if (row.Tilmelding && row.Tilmelding.toLowerCase() === "ja") {
+        if (row.Tilmelding && row.Tilmelding.toLowerCase().trim() === "ja") {
           displayText = "Ja (Ring)";
           statusClass = "tilmelding-ja";
-        } else if (row.Tilmelding && row.Tilmelding.toLowerCase() === "nej") {
+        } else if (row.Tilmelding && row.Tilmelding.toLowerCase().trim() === "nej") {
           displayText = "Nej";
           statusClass = "tilmelding-nej";
         }
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row.Tid} - ${row.Slut}</td>
+          <td>${startStr} - ${endStr}</td>
           <td>${row.Aktivitet}</td>
           <td>${row.Sted}</td>
           <td class="${statusClass}">${displayText}</td>
@@ -53,10 +62,15 @@ function fetchActivities() {
 // Hent første gang når siden loader
 fetchActivities();
 
-// Opdater automatisk hvert 2. minut (120000 ms)
+// Opdater data hvert 2. minut
 setInterval(fetchActivities, 120000);
 
-// Ur
+// Auto-refresh hele siden hvert 10. minut (kan justeres eller fjernes)
+setInterval(() => {
+  window.location.reload(true); // Hård refresh
+}, 600000); // 10 minutter
+
+// Live-ur
 setInterval(() => {
   document.getElementById("clock").innerText =
     new Date().toLocaleTimeString("da-DK", {
