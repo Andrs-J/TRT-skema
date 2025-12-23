@@ -1,10 +1,9 @@
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
-const SHEET_NAME = "Sheet1"; // Ret hvis dit ark hedder noget andet
+const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
-// Hent og vis aktiviteter
 function fetchActivities() {
-  fetch(url + '?cb=' + new Date().getTime()) // Cache-buster
+  fetch(url + '?cb=' + new Date().getTime())
     .then(res => res.json())
     .then(data => {
       const table = document.getElementById("activities");
@@ -15,26 +14,20 @@ function fetchActivities() {
       data.forEach(row => {
         if (!row.Tid || !row.Slut) return;
 
-        // Trim for at fjerne utilsigtede mellemrum
         const startStr = row.Tid.trim();
         const endStr = row.Slut.trim();
 
         const [startHour, startMinute] = startStr.split(":").map(Number);
         const [endHour, endMinute] = endStr.split(":").map(Number);
 
-        if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
-          console.warn("Ugyldig tid:", row);
-          return;
-        }
-
-        // Lav Date-objekter for start og slut i dag
         const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
         const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
 
-        // Tjek om aktiviteten er i gang
-        if (now < startTime || now > endTime) return;
+        if (isNaN(startTime) || isNaN(endTime)) return;
 
-        // Tilmelding: Ja (Ring) = rød, Nej = grøn
+        // Vis aktiviteten hvis den er igang eller endnu ikke startet
+        if (now > endTime) return;
+
         let displayText = "";
         let statusClass = "";
 
@@ -64,11 +57,6 @@ fetchActivities();
 
 // Opdater data hvert 2. minut
 setInterval(fetchActivities, 120000);
-
-// Auto-refresh hele siden hvert 10. minut (kan justeres eller fjernes)
-setInterval(() => {
-  window.location.reload(true); // Hård refresh
-}, 600000); // 10 minutter
 
 // Live-ur
 setInterval(() => {
