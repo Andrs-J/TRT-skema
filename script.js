@@ -1,3 +1,5 @@
+// script.js - opdateret så nuværende aktivitet ikke vises som duplikat i kortlisten
+
 // ======= KONFIGURATION =======
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -10,12 +12,8 @@ const now = () => new Date();
 const setStatus = (text) => { if ($("status")) $("status").innerText = text; };
 const showMessage = (txt) => { if ($("message")) $("message").innerText = txt || ""; };
 
-function saveCache(data) {
-  try { localStorage.setItem("trt_cache", JSON.stringify({ ts: Date.now(), data })); } catch (e) {}
-}
-function loadCache() {
-  try { const raw = localStorage.getItem("trt_cache"); if (!raw) return null; return JSON.parse(raw); } catch(e){ return null; }
-}
+function saveCache(data) { try { localStorage.setItem("trt_cache", JSON.stringify({ ts: Date.now(), data })); } catch (e) {} }
+function loadCache() { try { const raw = localStorage.getItem("trt_cache"); if (!raw) return null; return JSON.parse(raw); } catch(e){ return null; } }
 
 function parseHM(str) {
   if (!str) return null;
@@ -45,12 +43,8 @@ async function pollForChanges() {
       triggerHardReload();
       return;
     }
-    if (!last) {
-      try { localStorage.setItem(STORAGE_KEY, snapshot); } catch(e) {}
-    }
-  } catch (err) {
-    console.error("Poll-fejl:", err);
-  }
+    if (!last) try { localStorage.setItem(STORAGE_KEY, snapshot); } catch(e) {}
+  } catch (err) { console.error("Poll-fejl:", err); }
 }
 function triggerHardReload() {
   const lastReload = parseInt(localStorage.getItem("trt_last_reload_ts") || "0", 10);
@@ -99,7 +93,7 @@ function processData(rows) {
     if (!startParsed || !endParsed) return;
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate() + 1);
+    if (end < start) end.setDate(end.getDate()+1);
     processed.push({
       raw: r,
       start,
@@ -116,7 +110,6 @@ function processData(rows) {
 }
 
 function renderActivities(list) {
-  // Opdater næste aktivitet (stort kort)
   const nowTime = now();
   let current = null;
   let next = null;
@@ -129,13 +122,13 @@ function renderActivities(list) {
     next = list[idx + 1] || null;
   }
 
+  // Opdater Næste aktivitet kort (stort)
   const nextCard = $("nextCard");
   if (nextCard) {
     const timeEl = nextCard.querySelector(".time");
     const activityEl = nextCard.querySelector(".activity");
     const placeEl = nextCard.querySelector(".place");
     const signupEl = nextCard.querySelector(".signup");
-
     if (current) {
       if (timeEl) timeEl.textContent = `${formatTime(current.start)} - ${formatTime(current.end)}`;
       if (activityEl) activityEl.textContent = current.aktivitet || "—";
@@ -165,11 +158,13 @@ function renderActivities(list) {
     }
   }
 
-  // Opdater store aktivitet-kort (næste op til 8)
+  // Vis kommende aktiviteter som store kort.
+  // VIGTIGT: hvis current findes, spring første aktivitet (current) over så den ikke vises dobbelt.
   const container = $("bigActivities");
   if (!container) return;
   container.innerHTML = "";
-  const display = list.slice(0, 8);
+  const startIndex = current ? 1 : 0;
+  const display = list.slice(startIndex, startIndex + 8); // maks 8 kort
   display.forEach(item => {
     const card = document.createElement("div");
     card.className = "activity-card" + ((item === current) ? " current" : "");
@@ -225,19 +220,13 @@ function stopCountdown() { if (countdownInterval) { clearInterval(countdownInter
 
 // Clock
 function startClock() {
-  setInterval(() => {
-    if ($("clock")) $("clock").innerText = formatTime(new Date());
-  }, 1000);
+  setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
 // UI events
 if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
-if ($("fsBtn")) $("fsBtn").addEventListener("click", () => {
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-});
+if ($("fsBtn")) $("fsBtn").addEventListener("click", () => { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); });
 
 // STARTUP
 fetchActivities();
