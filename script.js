@@ -1,12 +1,10 @@
-// script.js - viser aktiviteter i rækker, og forbi-aktiviteter viser stort, centreret "Afsluttet".
-// Poller sheet og laver hård reload ved ændringer. Opdater countdown hvert sekund.
+// script.js - opdateret: forbi-aktiviteter viser stor "Afsluttet" men titel/sted forbliver synlige.
+// Ingen tidsangivelse for afsluttet. Poll + hård reload bevares.
 
-// ======= KONFIGURATION =======
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
-// ======= HELPERS =======
 const $ = (id) => document.getElementById(id);
 const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 const now = () => new Date();
@@ -26,7 +24,7 @@ function parseHM(str) {
   return { hh, mm };
 }
 
-// ======= POLLING / HARD RELOAD (hver 60s) =======
+// Polling/hard reload
 const POLL_INTERVAL_MS = 60 * 1000;
 const STORAGE_KEY = "trt_last_snapshot_v1";
 const RELOAD_GRACE_MS = 10 * 1000;
@@ -53,7 +51,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// ======= HENT OG PROCESSER DATA =======
+// Hent + process
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -82,7 +80,6 @@ async function fetchActivities() {
   }
 }
 
-// Parse + sort
 function processData(rows) {
   const today = new Date();
   const processed = [];
@@ -108,18 +105,14 @@ function processData(rows) {
   return all;
 }
 
-// ======= RENDER: vis upcoming først, past til sidst.
-// For each row vi laver en .past-center skjult element som vises når rækken er past.
+// Render - upcoming først, past til sidst
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
   container.innerHTML = "";
 
   const nowTime = now();
-
-  // Split upcoming/past så upcoming vises først
-  const upcoming = [];
-  const past = [];
+  const upcoming = [], past = [];
   list.forEach(item => {
     if (item.end.getTime() > nowTime.getTime()) upcoming.push(item);
     else past.push(item);
@@ -136,7 +129,7 @@ function renderActivities(list) {
     timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
     row.appendChild(timeDiv);
 
-    // Midterkolonne: indeholder normal-info (title+place) og hidden past-center
+    // Midte: normal-info + past-center
     const tp = document.createElement("div");
     tp.className = "title-place";
 
@@ -153,13 +146,13 @@ function renderActivities(list) {
 
     const pastCenter = document.createElement("div");
     pastCenter.className = "past-center";
-    pastCenter.textContent = "Afsluttet"; // stor, centreret tekst
+    pastCenter.textContent = "Afsluttet";
 
     tp.appendChild(normalInfo);
     tp.appendChild(pastCenter);
     row.appendChild(tp);
 
-    // Meta (tilmelding + countdown)
+    // Meta
     const meta = document.createElement("div");
     meta.className = "meta";
     const signup = document.createElement("div");
@@ -179,25 +172,22 @@ function renderActivities(list) {
     return row;
   }
 
-  // Render upcoming
   upcoming.forEach(item => {
-    const isCurrent = (item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime());
+    const isCurr = (item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime());
     const row = createRow(item, false);
-    if (isCurrent) row.classList.add("current");
+    if (isCurr) row.classList.add("current");
     container.appendChild(row);
   });
 
-  // Render past (vises med "Afsluttet" centreret)
   past.forEach(item => {
     const row = createRow(item, true);
     container.appendChild(row);
   });
 
-  // Start opdatering af countdowns / past-states
   updateAllCountdowns();
 }
 
-// Opdaterer countdowns hvert sekund og konverterer rækker til 'past' når slut
+// Opdater countdowns - vis kun "Slutter om" eller "Starter om" for upcoming; for past vis kun Afsluttet label (ingen tid)
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
   const nowMs = Date.now();
@@ -207,45 +197,40 @@ function updateAllCountdowns() {
     if (isNaN(start) || isNaN(end)) { el.textContent = ""; return; }
 
     const row = el.closest(".activity-row");
+    const signupEl = row.querySelector(".meta .signup");
     const normalInfo = row.querySelector(".normal-info");
     const pastCenter = row.querySelector(".past-center");
-    const signupEl = row.querySelector(".meta .signup");
 
     if (nowMs >= start && nowMs <= end) {
       // Aktiv nu
       const diff = end - nowMs;
       el.textContent = `Slutter om: ${formatDelta(diff)}`;
       row.classList.remove("past");
-      if (row && !row.classList.contains("current")) {
-        document.querySelectorAll(".activity-row.current").forEach(r => r.classList.remove("current"));
-        row.classList.add("current");
-      }
-      // vis normal info/meta
-      if (normalInfo) normalInfo.style.display = "";
+      row.classList.add("current");
+      if (signupEl) signupEl.style.opacity = "";
+      if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
-      if (signupEl) signupEl.style.display = "";
     } else if (nowMs < start) {
       // Ikke startet endnu
       const diff = start - nowMs;
       el.textContent = `Starter om: ${formatDelta(diff)}`;
       row.classList.remove("past");
-      if (row && row.classList.contains("current")) row.classList.remove("current");
-      if (normalInfo) normalInfo.style.display = "";
+      row.classList.remove("current");
+      if (signupEl) signupEl.style.opacity = "";
+      if (normalInfo) normalInfo.style.opacity = "";
       if (pastCenter) pastCenter.style.display = "none";
-      if (signupEl) signupEl.style.display = "";
     } else {
-      // Allerede slut -> 'Afsluttet' (ingen tidsangivelse)
+      // Past: vis kun Afsluttet label (ingen tid)
       el.textContent = "";
       row.classList.add("past");
-      if (row && row.classList.contains("current")) row.classList.remove("current");
-      if (normalInfo) normalInfo.style.display = "none";
+      row.classList.remove("current");
+      if (signupEl) signupEl.style.opacity = "0.6";
+      if (normalInfo) normalInfo.style.opacity = "0.75";
       if (pastCenter) pastCenter.style.display = ""; // vis 'Afsluttet'
-      if (signupEl) signupEl.style.display = "none";
     }
   });
 }
 
-// Formater ms til læsbar tid (bruges til "Slutter om" / "Starter om")
 function formatDelta(ms) {
   if (ms <= 0) return "0 min";
   const mins = Math.floor(ms / 60000);
@@ -257,11 +242,8 @@ function formatDelta(ms) {
   return `${mins} min`;
 }
 
-function clearActivities() {
-  if ($("activities")) $("activities").innerHTML = "";
-}
+function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
 
-// Clock
 function startClock() {
   setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
   if ($("clock")) $("clock").innerText = formatTime(new Date());
