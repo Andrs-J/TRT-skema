@@ -39,17 +39,12 @@ th, td {
 }
 
 /* Tilmelding-status */
-.tilmelding-ledig {
-  color: green;
-  font-weight: bold;
-}
-
-.tilmelding-fuld {
-  color: orange;
-  font-weight: bold;
-}
-
-.tilmelding-aflyst {
+.tilmelding-ja {
   color: red;
+  font-weight: bold;
+}
+
+.tilmelding-nej {
+  color: green;
   font-weight: bold;
 }
