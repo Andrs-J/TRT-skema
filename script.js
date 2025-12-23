@@ -1,5 +1,5 @@
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
-const SHEET_NAME = "Sheet1"; // ret hvis dit ark hedder noget andet
+const SHEET_NAME = "Sheet1"; // Ret hvis dit ark hedder noget andet
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 function fetchActivities() {
@@ -9,8 +9,18 @@ function fetchActivities() {
       const table = document.getElementById("activities");
       table.innerHTML = "";
 
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
       data.forEach(row => {
         if (!row.Tid) return;
+
+        // Konverter tid fra Sheet til minutter
+        const [hour, minute] = row.Tid.split(":").map(Number);
+        const activityMinutes = hour * 60 + minute;
+
+        // Spring aktiviteten over, hvis den allerede er startet/færdig
+        if (activityMinutes < currentMinutes) return;
 
         // Tilmelding: Ja (Ring) = rød, Nej = grøn
         let displayText = "";
