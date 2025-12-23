@@ -2,16 +2,28 @@ const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
+// Hent og vis aktiviteter
 function fetchActivities() {
-  fetch(url + '?cb=' + new Date().getTime())
+  fetch(url + '?cb=' + new Date().getTime()) // Cache-buster
     .then(res => res.json())
     .then(data => {
       const table = document.getElementById("activities");
       table.innerHTML = "";
 
+      // Håndter både array og objekt (OpenSheet returnerer ofte { Sheet1: [...] })
+      let activitiesArray = [];
+      if (Array.isArray(data)) {
+        activitiesArray = data;
+      } else if (data[SHEET_NAME] && Array.isArray(data[SHEET_NAME])) {
+        activitiesArray = data[SHEET_NAME];
+      } else {
+        console.warn("Ingen aktiviteter fundet i fetch:", data);
+        return;
+      }
+
       const now = new Date();
 
-      data.forEach(row => {
+      activitiesArray.forEach(row => {
         if (!row.Tid || !row.Slut) return;
 
         const startStr = row.Tid.trim();
@@ -20,12 +32,13 @@ function fetchActivities() {
         const [startHour, startMinute] = startStr.split(":").map(Number);
         const [endHour, endMinute] = endStr.split(":").map(Number);
 
+        // Lav Date-objekter for start og slut
         const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
         const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
 
         if (isNaN(startTime) || isNaN(endTime)) return;
 
-        // Vis aktiviteten hvis den er igang eller endnu ikke startet
+        // Vis aktivitet hvis den endnu ikke er slut
         if (now > endTime) return;
 
         let displayText = "";
