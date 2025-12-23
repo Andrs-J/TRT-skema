@@ -1,20 +1,19 @@
-/* Grundlayout */
 :root{
-  --bg:#0b1220;
-  --panel:#0f1723;
-  --accent:#ffcc00;
-  --muted:#9aa4b2;
-  --card:#0b1724;
+  --bg:#041021;
+  --panel:#072033;
+  --accent:#ffd166;
+  --muted:#9fb3c8;
+  --card:#093045;
   --success:#28a745;
-  --danger:#d9534f;
+  --danger:#ff6b6b;
 }
 
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background:linear-gradient(180deg,#07101a 0%, #0b1220 100%);
-  color:#e6eef6;
+  background: linear-gradient(180deg, #031523 0%, #041021 100%);
+  color:#f7fbff;
   min-height:100vh;
   display:flex;
   flex-direction:column;
@@ -25,145 +24,146 @@ header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:18px 28px;
-  background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  border-bottom:1px solid rgba(255,255,255,0.04);
+  padding:18px 32px;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid rgba(255,255,255,0.03);
 }
 .brand h1{
   margin:0;
-  font-size:28px;
-  letter-spacing:0.6px;
+  font-size:48px; /* stor titel til at ses på afstand */
+  letter-spacing:0.4px;
 }
 .brand .sub{
-  font-size:12px;
+  font-size:16px;
   color:var(--muted);
-  margin-top:4px;
+  margin-top:6px;
 }
 .meta{
   display:flex;
-  gap:12px;
+  gap:14px;
   align-items:center;
 }
 .clock{
-  font-size:26px;
-  font-weight:600;
+  font-size:48px; /* stort ur */
+  font-weight:700;
   color:var(--accent);
-}
-.status{
-  font-size:13px;
-  color:var(--muted);
 }
 .controls button{
   background:transparent;
   border:1px solid rgba(255,255,255,0.06);
   color:var(--muted);
-  padding:8px 10px;
-  border-radius:6px;
+  padding:8px 12px;
+  border-radius:8px;
   cursor:pointer;
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* Main area */
-main{flex:1; padding:22px 28px; display:flex; flex-direction:column; gap:18px;}
-.now-card{
-  display:grid;
-  grid-template-columns: 1fr 420px;
-  gap:18px;
-  align-items:start;
+/* Main hero */
+main{flex:1; padding:28px 40px; display:flex; flex-direction:column; gap:20px;}
+.hero{
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+  align-items:center;
 }
 
-/* Næste aktivitet kort */
-.now-left{
+/* Næste aktivitet kort - meget stor og tydelig */
+.next-card{
+  width:100%;
+  max-width:1400px;
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  padding:20px;
-  border-radius:10px;
-  min-height:220px;
+  border-radius:14px;
+  padding:28px 36px;
+  display:flex;
+  gap:28px;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
 }
-.now-left h2{margin:0 0 8px 0; font-size:20px; color:var(--muted)}
-.card-content .time{
-  font-size:40px;
+.next-card .time{
+  font-size:120px; /* stor tid */
+  font-weight:800;
+  color:var(--accent);
+  line-height:1;
+}
+.next-card .activity{
+  font-size:56px;
+  font-weight:800;
+}
+.next-card .place{
+  font-size:22px;
+  color:var(--muted);
+  margin-top:6px;
+}
+.next-card .signup{ margin-top:10px; font-weight:800; font-size:20px; }
+.next-card .signup.ja{ color:var(--danger) }
+.next-card .signup.nej{ color:var(--success) }
+.countdown{ font-size:18px; color:var(--muted); margin-top:8px; }
+
+/* Store kort liste for de næste aktiviteter */
+.big-activities{
+  width:100%;
+  max-width:1400px;
+  display:flex;
+  flex-direction:row;
+  gap:14px;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+}
+.activity-card{
+  background:var(--card);
+  border-radius:12px;
+  padding:18px 20px;
+  flex: 1 1 340px; /* cards tilpasser række/kolonne */
+  min-width:300px;
+  color: #f3fbff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+.activity-card .time{
+  font-size:28px;
   font-weight:700;
   color:var(--accent);
 }
-.card-content .activity{
-  font-size:32px;
+.activity-card .title{
+  font-size:28px;
+  font-weight:800;
+  margin-top:8px;
+}
+.activity-card .place{
   margin-top:6px;
-  font-weight:700;
-}
-.card-content .place{font-size:18px; color:var(--muted); margin-top:6px;}
-.card-content .signup{margin-top:10px; font-weight:700;}
-.card-content .signup.ja{color:var(--danger)}
-.card-content .signup.nej{color:var(--success)}
-.countdown{margin-top:8px; font-size:16px; color:var(--muted)}
-
-/* Right column - liste og QR */
-.now-right{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-.activities-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:16px;
-  background:rgba(255,255,255,0.02);
-  border-radius:8px;
-  overflow:hidden;
-}
-.activities-table thead th{
-  text-align:left;
-  font-weight:600;
   color:var(--muted);
-  padding:10px 12px;
-  background:rgba(255,255,255,0.01);
+  font-size:18px;
 }
-.activities-table td{
-  padding:12px;
-  border-top:1px solid rgba(255,255,255,0.02);
-  color:#e6eef6;
+.activity-card.current{
+  outline: 4px solid rgba(255,209,102,0.12);
+  transform: translateY(-4px);
 }
-.activities-table tr.current{
-  background:linear-gradient(90deg, rgba(255,204,0,0.08), rgba(255,204,0,0.02));
-}
-.activities-table td.time-col{width:120px; font-weight:700; color:var(--accent)}
-
-/* QR boks */
-.qr-area{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:10px;
-  background:rgba(255,255,255,0.02);
-  border-radius:8px;
-}
-.qr-area img{width:88px;height:88px;border-radius:6px;background:#fff}
-.qr-label{font-size:13px;color:var(--muted)}
-.qr-link a{color:var(--accent); text-decoration:none; font-weight:600}
 
 /* Message area */
 .message{
-  padding:10px 14px;
   color:var(--muted);
-  font-size:13px;
+  font-size:16px;
+  text-align:center;
 }
 
 /* Footer */
 footer{
-  padding:10px 22px;
+  padding:12px 28px;
   color:var(--muted);
-  font-size:13px;
+  font-size:16px;
   border-top:1px solid rgba(255,255,255,0.02);
 }
 
 /* Hjælpeklasser */
 .visually-hidden{position:absolute !important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
 
-/* Responsiv */
-@media (max-width:1100px){
-  .now-card{grid-template-columns:1fr; }
-  .now-right{order:2}
-  .now-left{order:1}
+/* Responsiv: skaler ned på small devices */
+@media (max-width:900px){
+  .brand h1{ font-size:32px; }
+  .clock{ font-size:28px; }
+  .next-card { padding:18px; flex-direction:column; align-items:flex-start; gap:12px; }
+  .next-card .time{ font-size:60px; }
+  .next-card .activity{ font-size:24px; }
+  .big-activities{ flex-direction:column; gap:12px; }
+  .activity-card{ min-width: auto; flex-basis: auto; }
 }
-
-/* Hide cursor for kiosk efter kort inaktivitet (kan toggles fra JS hvis ønsket) */
-.kiosk-hide-cursor{cursor:none}
