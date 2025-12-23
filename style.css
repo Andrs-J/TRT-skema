@@ -1,9 +1,16 @@
-/* style.css - større tekst i rækkerne (til læsning på afstand)
+/* style.css - tabel-lignende layout (én aktivitet per række)
    ---------------------------------------------------------
-   Ændr størrelser i :root-sektionen nederst hvis du vil finjustere.
-   Denne version gør rækkerne markant større så de er læsbare fra flere meter.
+   Dansk kommenteret: ændringer foretages primært i :root (øverst).
+   Ændr størrelser her for hurtig tilpasning til din skærm / afstand.
 */
 
+/* =========================
+   HOVEDVARIABLER (Ændr her)
+   =========================
+   - --gutter-side: afstand til venstre/højre (sæt 0 for kant-til-kant)
+   - --fs-row-...: tekststørrelser i rækkerne
+   - --time-col-width / --meta-col-width: kolonnebredder
+*/
 :root{
   /* Farver */
   --bg: #041021;
@@ -14,27 +21,27 @@
   --danger: #ff6b6b;
 
   /* Layout */
-  --gutter-side: 12px;        /* afstand fra kant - sæt 0 for kant-til-kant */
-  --row-gap: 18px;            /* afstand mellem rækker */
-  --time-col-width: 320px;    /* bredde på tid-kolonnen - øget for større tid */
-  --meta-col-width: 260px;    /* bredde på højre meta-kolonne (tilmelding + countdown) */
+  --gutter-side: 12px;        /* Horisontal gutter (venstre/højre) */
+  --row-gap: 18px;
+  --time-col-width: 320px;    /* Bredde på tid-kolonnen */
+  --meta-col-width: 260px;    /* Bredde på højre meta-kolonne */
 
-  /* TYPografi - STØRRE værdier for lang afstand */
+  /* TYPografi (Ændr disse for at justere størrelser globalt) */
   --fs-brand-title: 32px;
   --fs-clock: 36px;
 
-  /* Række-typografi - ÆNDRE HER for at justere størrelser */
-  --fs-row-time: 44px;        /* Tid i hver række (venstre) */
-  --fs-row-title: 44px;       /* Titel i hver række (stor) */
-  --fs-row-place: 26px;       /* Lokale i hver række */
-  --fs-signup: 30px;          /* Tilmelding-tekst i højre kolonne */
+  /* Række-typografi - justér for læsbarhed på afstand */
+  --fs-row-time: 28px;        /* Tid i venstre kolonne */
+  --fs-row-title: 44px;       /* Titel i rækken */
+  --fs-row-place: 26px;       /* Lokale i rækken */
+  --fs-signup: 24px;          /* Tilmelding-tekst i højre kolonne */
 
   /* Andre */
   --next-card-radius: 12px;
 }
 
 /* =========================
-   Generelt
+   GENERELT
    ========================= */
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -48,7 +55,9 @@ body{
   flex-direction:column;
 }
 
-/* Header */
+/* =========================
+   HEADER
+   ========================= */
 header{
   display:flex;
   justify-content:space-between;
@@ -72,7 +81,9 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* Main */
+/* =========================
+   MAIN / HERO
+   ========================= */
 main{
   flex:1;
   padding:20px var(--gutter-side);
@@ -83,7 +94,9 @@ main{
 }
 .hero{ display:flex; flex-direction:column; gap:18px; width:100%; }
 
-/* Aktivitetsliste (RÆKKER) */
+/* =========================
+   AKTIVITETSLISTE (RÆKKER)
+   ========================= */
 .activities-list{
   width: calc(100% - (var(--gutter-side) * 2));
   display:flex;
@@ -92,7 +105,7 @@ main{
   margin:0 auto;
 }
 
-/* Hver række - layout med 3 kolonner: tid | titel+sted | meta */
+/* HVER RÆKKE - layout med 3 kolonner: tid | titel+sted | meta */
 .activity-row{
   background:var(--card);
   border-radius:8px;
@@ -102,10 +115,11 @@ main{
   display:flex;
   align-items:center;
   gap:20px;
-  min-height:88px; /* øget for visuelt luft */
+  min-height:88px; /* Øg evt. hvis du vil have mere luft */
+  transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* Kolonne: Tid (venstre) - stor og tydelig */
+/* VENSTRE KOLONNE: Tid */
 .activity-row .time{
   width: var(--time-col-width);
   min-width:140px;
@@ -115,7 +129,7 @@ main{
   letter-spacing:0.6px;
 }
 
-/* Kolonne: Titel + sted (midt) - stor tekst */
+/* MIDTEN: Titel + sted */
 .activity-row .title-place{
   flex:1;
   display:flex;
@@ -128,12 +142,12 @@ main{
   line-height:1.02;
 }
 .activity-row .place{
-  font-size:var(--fs-row-place); /* Ændr denne for 'lokalet' */
+  font-size:var(--fs-row-place); /* Ændr her for 'lokalet' størrelse */
   color:var(--muted);
   opacity:0.95;
 }
 
-/* Kolonne: meta (højre) - tilmelding + countdown */
+/* HØJRE KOLONNE: Meta (tilmelding + countdown) */
 .activity-row .meta{
   width: var(--meta-col-width);
   min-width:140px;
@@ -144,7 +158,7 @@ main{
   text-align:right;
 }
 .activity-row .meta .signup{
-  font-size:var(--fs-signup); /* Ændr denne for 'tilmelding' */
+  font-size:var(--fs-signup); /* Ændr her for 'tilmelding' størrelse */
   font-weight:900;
 }
 .activity-row .meta .countdown{
@@ -152,17 +166,30 @@ main{
   color:var(--muted);
 }
 
-/* Markér nuværende aktivitet */
+/* MARKERING AF NUVÆRENDE AKTIVITET */
 .activity-row.current{
   outline: 3px solid rgba(255,209,102,0.12);
   transform: translateY(-2px);
 }
 
-/* Besked & footer */
+/* ===== Visuelt for forbi-aktiviteter =====
+   - 'past' klasse gør rækken mindre fremtrædende/faded
+*/
+.activity-row.past{
+  opacity: 0.45;
+  filter: grayscale(60%);
+  pointer-events: auto; /* behold interaktion hvis du f.eks. vil kopiere tekst; sæt til 'none' hvis du vil deaktivere */
+}
+.activity-row.past .title{
+  text-decoration: line-through;
+  color: rgba(255,255,255,0.8);
+}
+
+/* BESKED & FOOTER */
 .message{ color:var(--muted); font-size:16px; text-align:center; }
 footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* Responsiv: mindre skærme (skru ned automatisk) */
+/* RESPONSIV - mindre skærme */
 @media (max-width:1200px){
   :root{
     --time-col-width: 260px;
@@ -186,3 +213,12 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
+
+/* HURTIG GUIDE:
+   - Lokale (i rækken):  --fs-row-place
+   - Tilmelding:         --fs-signup
+   - Tid i rækken:       --fs-row-time
+   - Titel i rækken:     --fs-row-title
+   - Kolonnebredde:      --time-col-width, --meta-col-width
+   - Side-gutter:        --gutter-side
+*/
