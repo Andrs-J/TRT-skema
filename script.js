@@ -11,7 +11,6 @@ function fetchActivities() {
       table.innerHTML = "";
 
       const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       data.forEach(row => {
         if (!row.Tid || !row.Slut) return;
@@ -28,14 +27,12 @@ function fetchActivities() {
           return;
         }
 
-        const startMinutes = startHour * 60 + startMinute;
-        const endMinutes = endHour * 60 + endMinute;
+        // Lav Date-objekter for start og slut i dag
+        const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+        const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMinute);
 
-        // Debug log for at se hvorfor aktiviteter vises eller ej
-        console.log("Aktivitet:", row.Aktivitet, "Start:", startMinutes, "Slut:", endMinutes, "Nu:", currentMinutes);
-
-        // Vis kun aktiviteten, hvis vi er mellem start og slut
-        if (currentMinutes < startMinutes || currentMinutes > endMinutes) return;
+        // Tjek om aktiviteten er i gang
+        if (now < startTime || now > endTime) return;
 
         // Tilmelding: Ja (Ring) = rød, Nej = grøn
         let displayText = "";
@@ -68,7 +65,7 @@ fetchActivities();
 // Opdater data hvert 2. minut
 setInterval(fetchActivities, 120000);
 
-// Auto-refresh hele siden hvert 10. minut
+// Auto-refresh hele siden hvert 10. minut (kan justeres eller fjernes)
 setInterval(() => {
   window.location.reload(true); // Hård refresh
 }, 600000); // 10 minutter
