@@ -42,9 +42,9 @@
   --fs-countdown: 13px;          /* Nedtælling i næste-kortet */
 
   /* Kort i grid (de store kort under) */
-  --fs-card-time: 18px;          /* Tid i hvert aktivitet-kort */
-  --fs-card-title: 20px;         /* Titel i kortene */
-  --fs-card-place: 14px;         /* LOKALE - Ændr denne for at justere 'lokalet' i kortene */
+  --fs-card-time: 40px;          /* Tid i hvert aktivitet-kort */
+  --fs-card-title: 40px;         /* Titel i kortene */
+  --fs-card-place: 40px;         /* LOKALE - Ændr denne for at justere 'lokalet' i kortene */
 
   /* Tilmelding (signup) */
   --fs-signup: 40px;             /* TILMELDING - Ændr denne for at ændre "Tilmelding"-tekststørrelse */
