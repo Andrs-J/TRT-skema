@@ -1,12 +1,7 @@
-/* style.css - komplet replacement
-   --------------------------------------------------------
-   Denne version samler alle de tidligere ændringer:
-   - Én variabel --fs-header-size styrer titel / dato / ur
-   - Større rækker/typografi (til læsning på afstand)
-   - "Afsluttet" midt i rækken for past-aktiviteter
-   - Tilmeldingslinjen forhindrer linjeskift og får farveklasser .ja / .nej
-   - Responsiv nedskalering i media queries
-   Erstat din eksisterende style.css med denne og genindlæs siden.
+/* style.css - komplet replacement uden Opdater/Fuldskærm-knapper
+   --------------------------------------------------------------
+   Samme styling som før, men knapregler fjernet. Brug --fs-header-size
+   i :root hvis du vil ændre størrelse for titel/dato/ur samlet.
 */
 
 :root{
@@ -81,7 +76,7 @@ header{
   text-transform: capitalize;
 }
 
-/* Højre: ur + knapper */
+/* Højre: ur (knapper fjernet) */
 .meta{
   flex:0 0 auto;
   display:flex;
@@ -95,18 +90,6 @@ header{
   line-height:1;
   padding-right:8px;
 }
-
-/* Kontrolknapper (mindre) */
-.controls button{
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.06);
-  color:var(--muted);
-  padding:8px 12px;
-  border-radius:8px;
-  cursor:pointer;
-  font-size:14px;
-}
-.controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
 /* === MAIN / AKTIVITETER === */
 main{
@@ -210,7 +193,7 @@ main{
   font-weight:900;
   white-space:nowrap;      /* forhindrer "JA (Ring)" i at blive delt på to linjer */
   display:inline-block;
-  overflow:visible;        /* hvis du foretrækker ellipsis: sæt til hidden + text-overflow */
+  overflow:visible;
 }
 
 /* FARVER: JA / NEJ */
