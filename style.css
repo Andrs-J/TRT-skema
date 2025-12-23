@@ -1,16 +1,8 @@
-/* style.css - tabel-lignende layout (én aktivitet per række)
-   ---------------------------------------------------------
-   Dansk kommenteret: ændringer foretages primært i :root (øverst).
-   Ændr størrelser her for hurtig tilpasning til din skærm / afstand.
+/* style.css - tabel-lignende layout med stor, centreret "Afsluttet" for forbi-aktiviteter
+   ---------------------------------------------------------------------------------------
+   Ændr hurtigt størrelser i :root (øverst). --fs-past-label styrer størrelsen på "Afsluttet".
 */
 
-/* =========================
-   HOVEDVARIABLER (Ændr her)
-   =========================
-   - --gutter-side: afstand til venstre/højre (sæt 0 for kant-til-kant)
-   - --fs-row-...: tekststørrelser i rækkerne
-   - --time-col-width / --meta-col-width: kolonnebredder
-*/
 :root{
   /* Farver */
   --bg: #041021;
@@ -21,28 +13,22 @@
   --danger: #ff6b6b;
 
   /* Layout */
-  --gutter-side: 12px;        /* Horisontal gutter (venstre/højre) */
+  --gutter-side: 12px;
   --row-gap: 18px;
-  --time-col-width: 320px;    /* Bredde på tid-kolonnen */
-  --meta-col-width: 260px;    /* Bredde på højre meta-kolonne */
+  --time-col-width: 320px;
+  --meta-col-width: 260px;
 
-  /* TYPografi (Ændr disse for at justere størrelser globalt) */
-  --fs-brand-title: 32px;
-  --fs-clock: 36px;
-
-  /* Række-typografi - justér for læsbarhed på afstand */
+  /* Typografi for rækker */
   --fs-row-time: 44px;        /* Tid i venstre kolonne */
-  --fs-row-title: 44px;       /* Titel i rækken */
-  --fs-row-place: 26px;       /* Lokale i rækken */
-  --fs-signup: 30px;          /* Tilmelding-tekst i højre kolonne */
+  --fs-row-title: 44px;       /* Titel i midten (aktivitet) */
+  --fs-row-place: 26px;       /* Lokale i midten (aktivitet) */
+  --fs-signup: 30px;          /* Tilmelding i højre kolonne */
 
-  /* Andre */
-  --next-card-radius: 12px;
+  /* "Afsluttet" label størrelse */
+  --fs-past-label: 40px;      /* Ændr denne for større/mindre 'Afsluttet' */
 }
 
-/* =========================
-   GENERELT
-   ========================= */
+/* GENERELT */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -55,9 +41,7 @@ body{
   flex-direction:column;
 }
 
-/* =========================
-   HEADER
-   ========================= */
+/* HEADER */
 header{
   display:flex;
   justify-content:space-between;
@@ -66,9 +50,9 @@ header{
   background:rgba(255,255,255,0.02);
   border-bottom:1px solid rgba(255,255,255,0.03);
 }
-.brand h1{ margin:0; font-size:var(--fs-brand-title); }
+.brand h1{ margin:0; font-size:32px; }
 .brand .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
-.clock{ font-size:var(--fs-clock); font-weight:700; color:var(--accent); }
+.clock{ font-size:36px; font-weight:700; color:var(--accent); }
 
 /* Kontrolknapper */
 .controls button{
@@ -81,9 +65,7 @@ header{
 }
 .controls button:hover{ color:white; border-color:rgba(255,255,255,0.12) }
 
-/* =========================
-   MAIN / HERO
-   ========================= */
+/* MAIN / HERO */
 main{
   flex:1;
   padding:20px var(--gutter-side);
@@ -94,9 +76,7 @@ main{
 }
 .hero{ display:flex; flex-direction:column; gap:18px; width:100%; }
 
-/* =========================
-   AKTIVITETSLISTE (RÆKKER)
-   ========================= */
+/* AKTIVITETSLISTE - RÆKKER */
 .activities-list{
   width: calc(100% - (var(--gutter-side) * 2));
   display:flex;
@@ -105,7 +85,7 @@ main{
   margin:0 auto;
 }
 
-/* HVER RÆKKE - layout med 3 kolonner: tid | titel+sted | meta */
+/* HVER RÆKKE: tid | midte (titel/place eller Afsluttet) | meta */
 .activity-row{
   background:var(--card);
   border-radius:8px;
@@ -115,11 +95,11 @@ main{
   display:flex;
   align-items:center;
   gap:20px;
-  min-height:88px; /* Øg evt. hvis du vil have mere luft */
+  min-height:88px;
   transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* VENSTRE KOLONNE: Tid */
+/* VENSTRE: Tid */
 .activity-row .time{
   width: var(--time-col-width);
   min-width:140px;
@@ -129,9 +109,17 @@ main{
   letter-spacing:0.6px;
 }
 
-/* MIDTEN: Titel + sted */
+/* MIDTEN: holder normal-info (title/place) og past-center */
 .activity-row .title-place{
   flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  position:relative;
+}
+
+/* Normal info (titel + sted) */
+.activity-row .normal-info { /* container for titel+sted */
   display:flex;
   flex-direction:column;
   gap:6px;
@@ -142,12 +130,23 @@ main{
   line-height:1.02;
 }
 .activity-row .place{
-  font-size:var(--fs-row-place); /* Ændr her for 'lokalet' størrelse */
+  font-size:var(--fs-row-place);
   color:var(--muted);
   opacity:0.95;
 }
 
-/* HØJRE KOLONNE: Meta (tilmelding + countdown) */
+/* PAST CENTER - skjult normalt, vises når rækken er past */
+.activity-row .past-center{
+  display:none;
+  width:100%;
+  text-align:center;
+  font-size:var(--fs-past-label);
+  font-weight:900;
+  color:#ffffff; /* tydelig kontrast */
+  letter-spacing:0.6px;
+}
+
+/* HØJRE: meta (tilmelding + countdown) */
 .activity-row .meta{
   width: var(--meta-col-width);
   min-width:140px;
@@ -158,7 +157,7 @@ main{
   text-align:right;
 }
 .activity-row .meta .signup{
-  font-size:var(--fs-signup); /* Ændr her for 'tilmelding' størrelse */
+  font-size:var(--fs-signup);
   font-weight:900;
 }
 .activity-row .meta .countdown{
@@ -166,30 +165,26 @@ main{
   color:var(--muted);
 }
 
-/* MARKERING AF NUVÆRENDE AKTIVITET */
+/* KLASSE: past - gør rækken afdæmpet og vis 'Afsluttet' i midten */
+.activity-row.past{
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
+.activity-row.past .normal-info{ display:none; }        /* skjul titel+sted */
+.activity-row.past .meta{ display:none; }               /* skjul meta */
+.activity-row.past .past-center{ display:block; }       /* vis stor 'Afsluttet' label */
+
+/* MARKÉR NU (hvis ønsket) */
 .activity-row.current{
   outline: 3px solid rgba(255,209,102,0.12);
   transform: translateY(-2px);
-}
-
-/* ===== Visuelt for forbi-aktiviteter =====
-   - 'past' klasse gør rækken mindre fremtrædende/faded
-*/
-.activity-row.past{
-  opacity: 0.45;
-  filter: grayscale(60%);
-  pointer-events: auto; /* behold interaktion hvis du f.eks. vil kopiere tekst; sæt til 'none' hvis du vil deaktivere */
-}
-.activity-row.past .title{
-  text-decoration: line-through;
-  color: rgba(255,255,255,0.8);
 }
 
 /* BESKED & FOOTER */
 .message{ color:var(--muted); font-size:16px; text-align:center; }
 footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
 
-/* RESPONSIV - mindre skærme */
+/* RESPONSIV */
 @media (max-width:1200px){
   :root{
     --time-col-width: 260px;
@@ -198,6 +193,7 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
     --fs-row-title: 36px;
     --fs-row-place: 22px;
     --fs-signup: 20px;
+    --fs-past-label: 32px;
   }
 }
 @media (max-width:900px){
@@ -209,16 +205,8 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
     --fs-row-place: 14px;
     --fs-signup: 14px;
     --gutter-side: 10px;
+    --fs-past-label: 20px;
   }
   .activity-row{ padding:10px; min-height:64px; gap:12px; }
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
-
-/* HURTIG GUIDE:
-   - Lokale (i rækken):  --fs-row-place
-   - Tilmelding:         --fs-signup
-   - Tid i rækken:       --fs-row-time
-   - Titel i rækken:     --fs-row-title
-   - Kolonnebredde:      --time-col-width, --meta-col-width
-   - Side-gutter:        --gutter-side
-*/
