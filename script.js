@@ -3,7 +3,7 @@ const SHEET_NAME = "Sheet1"; // Ret hvis dit ark hedder noget andet
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 function fetchActivities() {
-  fetch(url)
+  fetch(url + '?cb=' + new Date().getTime())
     .then(res => res.json())
     .then(data => {
       const table = document.getElementById("activities");
