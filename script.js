@@ -1,5 +1,5 @@
 // script.js - som før, med automatisk opdatering af dag+dato (#currentDate)
-// Dato opdateres hvert minut (nok i praksis, ændrer kun ved midnat).
+// Opdater/fuldskærm-knapper er fjernet, så ingen event-listeners til disse.
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -55,13 +55,12 @@ function triggerHardReload() {
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  // Capitalize first letter (toLocale may return lowercase weekday depending on browser)
   const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
   const el = $("currentDate");
   if (el) el.textContent = text;
 }
 
-// HENT + PROCESS DATA (uændret funktionalitet fra tidligere)
+// HENT + PROCESS DATA
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -115,7 +114,7 @@ function processData(rows) {
   return all;
 }
 
-// Render / vis rækker (samme som før)
+// Render / vis rækker
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
@@ -163,28 +162,23 @@ function renderActivities(list) {
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    // --- OPRUSTET TILMELDINGSELEMENT (ingen linjeskift + farveklasser) ---
+    // Tilmelding - ingen linjeskift + farveklasser
     const signup = document.createElement("div");
     signup.className = "signup";
-
-    // item.tilmelding er already lowercased in processData()
     const t = (item.tilmelding || "").trim();
 
     if (t === "ja") {
-      // Vis hele teksten, men tilføj klasse .ja så CSS kan farve rød
       signup.textContent = "Tilmelding: JA (Ring)";
       signup.classList.add("ja");
     } else if (t === "nej" || t === "nej.") {
       signup.textContent = "Tilmelding: NEJ";
       signup.classList.add("nej");
     } else if (t) {
-      // Ukendt/andet - capitalize første bogstav for pæn visning
       signup.textContent = "Tilmelding: " + (t.charAt(0).toUpperCase() + t.slice(1));
     } else {
       signup.textContent = "";
     }
 
-    // Append signup to meta
     meta.appendChild(signup);
 
     const countdown = document.createElement("div");
@@ -270,9 +264,7 @@ function startClock() {
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
-// UI events
-if ($("refreshBtn")) $("refreshBtn").addEventListener("click", () => fetchActivities());
-if ($("fsBtn")) $("fsBtn").addEventListener("click", () => { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); });
+// UI events: Opdater/Fuldskærm fjernet (ingen listeners)
 
 // STARTUP: initialiser date, clock, data og polls
 updateDate();
