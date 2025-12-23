@@ -31,10 +31,10 @@
   --fs-clock: 36px;
 
   /* Række-typografi - justér for læsbarhed på afstand */
-  --fs-row-time: 28px;        /* Tid i venstre kolonne */
+  --fs-row-time: 44px;        /* Tid i venstre kolonne */
   --fs-row-title: 44px;       /* Titel i rækken */
   --fs-row-place: 26px;       /* Lokale i rækken */
-  --fs-signup: 24px;          /* Tilmelding-tekst i højre kolonne */
+  --fs-signup: 30px;          /* Tilmelding-tekst i højre kolonne */
 
   /* Andre */
   --next-card-radius: 12px;
