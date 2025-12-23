@@ -12,16 +12,24 @@ function fetchActivities() {
       data.forEach(row => {
         if (!row.Tid) return;
 
-        const statusClass = row.Tilmelding
-          ? "tilmelding-" + row.Tilmelding.toLowerCase()
-          : "";
+        // Tilmelding: Ja (Ring) = rød, Nej = grøn
+        let displayText = "";
+        let statusClass = "";
+
+        if (row.Tilmelding && row.Tilmelding.toLowerCase() === "ja") {
+          displayText = "Ja (Ring)";
+          statusClass = "tilmelding-ja";
+        } else if (row.Tilmelding && row.Tilmelding.toLowerCase() === "nej") {
+          displayText = "Nej";
+          statusClass = "tilmelding-nej";
+        }
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${row.Tid}</td>
           <td>${row.Aktivitet}</td>
           <td>${row.Sted}</td>
-          <td class="${statusClass}">${row.Tilmelding || ""}</td>
+          <td class="${statusClass}">${displayText}</td>
         `;
         table.appendChild(tr);
       });
