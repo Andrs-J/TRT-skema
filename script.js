@@ -1,5 +1,5 @@
-// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
-// Opdater/fuldskærm-knapper er fjernet.
+// script.js - komplet fil (ingen Opdater/Fuldskærm-knapper)
+// Opdateret updateDate() så dato vises som "Onsdag 24. december 2025" (uden "den")
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -51,13 +51,37 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag+dato i header
+// Opdater dag+dato i header — uden "den", fx "Onsdag 24. december 2025"
 function updateDate() {
   const d = new Date();
-  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+  // Brug formatToParts så vi kan fjerne litteraler som "den"
+  const parts = new Intl.DateTimeFormat("da-DK", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).formatToParts(d);
+
+  // Fjern parts hvor value er "den" (trimmet, case-insensitivt)
+  const filtered = parts.filter(p => !(p.type === "literal" && p.value.trim().toLowerCase() === "den"));
+
+  // Sæt delene sammen til en streng, ryd evt. dobbelte mellemrum og trim
+  let text = filtered.map(p => p.value).join("");
+  text = text.replace(/\s{2,}/g, " ").trim();
+
+  // Capitalize første bogstav
+  const out = text.charAt(0).toUpperCase() + text.slice(1);
+
   const el = $("currentDate");
-  if (el) el.textContent = text;
+  if (el) el.textContent = out;
+
+  // Detect date change (brug ISO dato som nøgle) og hent nye aktiviteter ved dataskifte
+  const todayKey = d.toISOString().slice(0,10); // "YYYY-MM-DD"
+  if (window.__trt_last_date !== todayKey) {
+    window.__trt_last_date = todayKey;
+    fetchActivities();
+  }
 }
 
 // HENT + PROCESS DATA
@@ -181,7 +205,6 @@ function renderActivities(list) {
       statusSpan.textContent = " NEJ";
       statusSpan.classList.add("nej");
     } else if (t) {
-      // ukendt tekst - vis pænt
       statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
     } else {
       statusSpan.textContent = "";
@@ -274,9 +297,11 @@ function startClock() {
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
+// UI events: Opdater/Fuldskærm fjernet (ingen listeners)
+
 // STARTUP: initialiser date, clock, data og polls
 updateDate();
-setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
+setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
