@@ -309,3 +309,9 @@ setInterval(fetchActivities, 60 * 1000);
 setInterval(updateAllCountdowns, 1000);
 pollForChanges();
 setInterval(pollForChanges, POLL_INTERVAL_MS);
+
+// Forhindre som standard, men hvis Shift er holdt nede tillades menuen
+document.addEventListener('contextmenu', (e) => {
+  if (e.shiftKey) return; // tillad hvis Shift holdes
+  e.preventDefault();
+});
