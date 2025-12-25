@@ -5,166 +5,108 @@ const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 const $ = (id) => document.getElementById(id);
 const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 const now = () => new Date();
-const setStatus = (text) => { if ($("status")) $("status").innerText = text; };
-const showMessage = (txt) => { if ($("message")) $("message").innerText = txt || ""; };
-
-function saveCache(data) { try { localStorage.setItem("trt_cache", JSON.stringify({ ts: Date.now(), data })); } catch (e) {} }
-function loadCache() { try { const raw = localStorage.getItem("trt_cache"); if (!raw) return null; return JSON.parse(raw); } catch (e) { return null; } }
-
-function parseHM(str) {
-  if (!str) return null;
-  const s = String(str).replace(/"/g, "").trim();
-  const m = s.match(/(\d{1,2}):(\d{2})/);
-  if (!m) return null;
-  const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
-  if (isNaN(hh) || isNaN(mm)) return null;
-  return { hh, mm };
-}
-
-// Polling/hard reload
-const POLL_INTERVAL_MS = 60 * 1000;
-const STORAGE_KEY = "trt_last_snapshot_v1";
-const RELOAD_GRACE_MS = 10 * 1000;
-function nowTs() { return Date.now(); }
-
-async function pollForChanges() {
-  try {
-    const fetchUrl = url + (url.includes("?") ? "&" : "?") + "_=" + nowTs();
-    const res = await fetch(fetchUrl, { cache: "no-store" });
-    if (!res.ok) return;
-    const data = await res.json();
-    const snapshot = JSON.stringify(data);
-    const last = localStorage.getItem(STORAGE_KEY);
-    if (last && last !== snapshot) { triggerHardReload(); return; }
-    if (!last) try { localStorage.setItem(STORAGE_KEY, snapshot); } catch (e) {}
-  } catch (err) { console.error("Poll-fejl:", err); }
-}
-
-function triggerHardReload() {
-  const lastReload = parseInt(localStorage.getItem("trt_last_reload_ts") || "0", 10);
-  if (Date.now() - lastReload < RELOAD_GRACE_MS) return;
-  localStorage.setItem("trt_last_reload_ts", String(Date.now()));
-  const urlObj = new URL(window.location.href);
-  urlObj.searchParams.set("r", String(nowTs()));
-  window.location.replace(urlObj.toString());
-}
 
 // Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
-  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: undefined });
-  const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long" });
   const el = $("currentDate");
-  if (el) el.textContent = text;
+  if (el) el.textContent = formatted;
 }
 
 // HENT + PROCESS DATA
 async function fetchActivities() {
-  setStatus("Henter aktiviteter…");
-  showMessage("");
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("Ugyldigt format fra sheet");
-    saveCache(data);
-    setStatus("Opdateret");
-    if ($("lastUpdated")) $("lastUpdated").innerText = new Date().toLocaleString("da-DK");
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
-    renderActivities(processData(data));
-  } catch (err) {
-    console.error("Fejl ved hent:", err);
-    setStatus("Offline / hent fejlede");
-    const cached = loadCache();
-    if (cached && cached.data) {
-      showMessage("Viser senest hentede data (offline).");
-      renderActivities(processData(cached.data));
-      if ($("lastUpdated")) $("lastUpdated").innerText = new Date(cached.ts).toLocaleString("da-DK");
-    } else {
-      showMessage("Kunne ikke hente aktiviteter, og der er ingen cache.");
-      clearActivities();
-    }
-  }
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  renderActivities(processData(data));
 }
 
 function processData(rows) {
-  const today = new Date();
-  const processed = [];
+  const activitiesByDay = {};
+
   rows.forEach(r => {
-    const startParsed = parseHM(r.Tid);
-    const endParsed = parseHM(r.Slut);
+    const day = r.Dag || ""; // Google Sheets kolonne for 'Dag'
+    if (!activitiesByDay[day]) activitiesByDay[day] = [];
+
+    const startParsed = parseHM(r["Tid"]);
+    const endParsed = parseHM(r["Slut"]);
     if (!startParsed || !endParsed) return;
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
-    let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate() + 1);
-    processed.push({
-      raw: r,
-      start,
-      end,
-      aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
-      sted: (r.Sted || "").replace(/"/g, "").trim(),
-      tilmelding: (r.Tilmelding === true) ? "✔️" : "❌",
-      aflyst: r.Aflyst === true
+
+    activitiesByDay[day].push({
+      aktivitet: r["Aktivitet"] || "Ukendt aktivitet",
+      sted: r["Sted"] || "Ukendt sted",
+      tid: `${formatTime(new Date(0, 0, 0, startParsed.hh, startParsed.mm))} - ${formatTime(new Date(0, 0, 0, endParsed.hh, endParsed.mm))}`,
+      tilmelding: r["Tilmelding"] === "TRUE" ? "✔️" : "❌",
+      aflyst: r["Aflyst"] === "TRUE"
     });
   });
-  const nowTime = now();
-  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0));
-  all.sort((a, b) => a.start - b.start);
-  return all;
+
+  return activitiesByDay;
 }
 
-function renderActivities(list) {
+function parseHM(str) {
+  if (!str) return null;
+  const [hh, mm] = str.split(":").map(Number);
+  if (isNaN(hh) || isNaN(mm)) return null;
+  return { hh, mm };
+}
+
+// Render / vis aktiviteter
+function renderActivities(data) {
   const container = $("activities");
   if (!container) return;
-  container.innerHTML = "";
 
-  const nowTime = now();
-  list.forEach(item => {
-    const row = document.createElement("div");
-    row.className = "activity-row";
+  container.innerHTML = ""; // Ryd tidligere indhold
 
-    // Tid
-    const timeDiv = document.createElement("div");
-    timeDiv.className = "time";
-    timeDiv.textContent = `${formatTime(item.start)} - ${formatTime(item.end)}`;
-    row.appendChild(timeDiv);
+  Object.keys(data).forEach(day => {
+    const section = document.createElement("div");
+    section.className = "day-section";
 
-    // Aktivitet + Sted
-    const tp = document.createElement("div");
-    tp.className = "title-place";
+    const title = document.createElement("h2");
+    title.className = "day-title";
+    title.textContent = day;
+    section.appendChild(title);
 
-    const normalInfo = document.createElement("div");
-    normalInfo.className = "normal-info";
-    const title = document.createElement("div");
-    title.className = "title";
-    title.textContent = item.aktivitet || "—";
-    const place = document.createElement("div");
-    place.className = "place";
-    place.textContent = item.sted || "";
-    normalInfo.appendChild(title);
-    normalInfo.appendChild(place);
+    data[day].forEach(activity => {
+      const row = document.createElement("div");
+      row.className = "activity-row";
 
-    // Status: Aflyst eller afsluttet
-    const statusDiv = document.createElement("div");
-    statusDiv.className = item.aflyst ? "cancelled-center" : "past-center";
-    statusDiv.textContent = item.aflyst ? "Aflyst" : "Afsluttet";
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "time";
+      timeDiv.textContent = activity.tid;
+      row.appendChild(timeDiv);
 
-    tp.appendChild(normalInfo);
-    tp.appendChild(statusDiv);
-    row.appendChild(tp);
+      const titleDiv = document.createElement("div");
+      titleDiv.className = "title";
+      titleDiv.textContent = activity.aktivitet;
+      row.appendChild(titleDiv);
 
-    container.appendChild(row);
+      const placeDiv = document.createElement("div");
+      placeDiv.className = "place";
+      placeDiv.textContent = activity.sted;
+      row.appendChild(placeDiv);
 
-    if (item.aflyst) {
-      row.classList.add("cancelled");
-    } else if (item.end < nowTime) {
-      row.classList.add("past");
-    }
+      const signupDiv = document.createElement("div");
+      signupDiv.className = "signup";
+      signupDiv.textContent = `Tilmelding: ${activity.tilmelding}`;
+      row.appendChild(signupDiv);
+
+      if (activity.aflyst) {
+        const cancelledDiv = document.createElement("div");
+        cancelledDiv.className = "cancelled-label";
+        cancelledDiv.textContent = "Aflyst";
+        row.classList.add("cancelled");
+        row.appendChild(cancelledDiv);
+      }
+
+      section.appendChild(row);
+    });
+
+    container.appendChild(section);
   });
 }
 
-// STARTUP: initialiser date, clock, data og polls
+// STARTUP
 updateDate();
-setInterval(updateDate, 60 * 1000); // Opdaterer dato hvert minut
 fetchActivities();
-setInterval(fetchActivities, 60 * 1000); // Opdater aktiviteter hvert minut
