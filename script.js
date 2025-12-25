@@ -242,3 +242,46 @@ setInterval(fetchActivities, 60 * 1000);
 setInterval(updateAllCountdowns, 1000);
 pollForChanges();
 setInterval(pollForChanges, POLL_INTERVAL_MS);
+
+// script.js - Dynamisk tilføj dagsektion for Tirsdag (dag 2)
+
+const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
+const SHEET_NAME = "Sheet1";
+const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+
+const $ = (id) => document.getElementById(id);
+const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
+const now = () => new Date();
+
+// Opdater dag + dato dynamisk
+function addDaySection(day, offset = 0) {
+    const container = $("activities");
+    if (!container) return;
+
+    // Beregn dags navn og dato
+    const d = new Date();
+    d.setDate(d.getDate() + offset); // Brug offset til dag nr. 2
+    const formattedDate = d.toLocaleDateString("da-DK", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+
+    // Opret sektion for dagen
+    const daySection = document.createElement("div");
+    daySection.className = "day-section";
+
+    const dayHeader = document.createElement("h2");
+    dayHeader.className = "day-header";
+    dayHeader.textContent = `${day} - ${formattedDate.charAt(0).toUpperCase()}${formattedDate.slice(1)}`; // Kapitalisér
+    daySection.appendChild(dayHeader);
+
+    container.appendChild(daySection);
+}
+
+// Start rendering ved at tilføje dag 2 under aktiviteter for dag 1
+document.addEventListener("DOMContentLoaded", () => {
+    addDaySection("Mandag", 0); // For dag 1 (allerede eksisterende logik)
+    addDaySection("Tirsdag", 1); // Tilføj dag 2 nedenunder
+});
