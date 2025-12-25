@@ -1,8 +1,7 @@
-// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
-// Opdater/fuldskærm-knapper er fjernet.
+// script.js - Opdateret så "Tilmelding:" vises som "Ja" eller "Nej" baseret på true/false værdien fra Google Sheets.
 
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
-const SHEET_NAME = "Sheet1";
+const SHEET_NAME = "Uge 1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
@@ -51,7 +50,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag+dato i header
+// Opdater dag + dato i header
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -60,7 +59,7 @@ function updateDate() {
   if (el) el.textContent = text;
 }
 
-// HENT + PROCESS DATA
+// Hent + process data
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -92,25 +91,37 @@ async function fetchActivities() {
 function processData(rows) {
   const today = new Date();
   const processed = [];
+
   rows.forEach(r => {
     const startParsed = parseHM(r.Tid);
     const endParsed = parseHM(r.Slut);
     if (!startParsed || !endParsed) return;
+
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate()+1);
+    if (end < start) end.setDate(end.getDate() + 1);
+
+    // Konverter tilmelding baseret på true/false
+    let tilmeldingStatus = "";
+    if (r.Tilmelding === true) {
+      tilmeldingStatus = "ja"; // True i Google Sheets bliver "Ja"
+    } else if (r.Tilmelding === false) {
+      tilmeldingStatus = "nej"; // False i Google Sheets bliver "Nej"
+    }
+
     processed.push({
       raw: r,
       start,
       end,
-      aktivitet: (r.Aktivitet || "").replace(/"/g,"").trim(),
-      sted: (r.Sted || "").replace(/"/g,"").trim(),
-      tilmelding: (r.Tilmelding || "").toLowerCase().trim()
+      aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
+      sted: (r.Sted || "").replace(/"/g, "").trim(),
+      tilmelding: tilmeldingStatus // Brug den konverterede status
     });
   });
+
   const nowTime = now();
-  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
-  all.sort((a,b) => a.start - b.start);
+  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0));
+  all.sort((a, b) => a.start - b.start);
   return all;
 }
 
@@ -162,7 +173,6 @@ function renderActivities(list) {
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    // Tilmelding: split i label + status. Label neutral, status farvet.
     const signup = document.createElement("div");
     signup.className = "signup";
 
@@ -172,30 +182,20 @@ function renderActivities(list) {
 
     const statusSpan = document.createElement("span");
     statusSpan.className = "signup-status";
-
     const t = (item.tilmelding || "").trim();
     if (t === "ja") {
-      statusSpan.textContent = " JA (Ring)";
+      statusSpan.textContent = " Ja";
       statusSpan.classList.add("ja");
-    } else if (t === "nej" || t === "nej.") {
-      statusSpan.textContent = " NEJ";
+    } else if (t === "nej") {
+      statusSpan.textContent = " Nej";
       statusSpan.classList.add("nej");
-    } else if (t) {
-      // ukendt tekst - vis pænt
-      statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
     } else {
-      statusSpan.textContent = "";
+      statusSpan.textContent = ""; // Ingen tekst hvis værdi ikke eksisterer
     }
 
     signup.appendChild(labelSpan);
     signup.appendChild(statusSpan);
     meta.appendChild(signup);
-
-    const countdown = document.createElement("div");
-    countdown.className = "countdown";
-    countdown.dataset.start = String(item.start.getTime());
-    countdown.dataset.end = String(item.end.getTime());
-    meta.appendChild(countdown);
 
     row.appendChild(meta);
     return row;
@@ -215,6 +215,8 @@ function renderActivities(list) {
 
   updateAllCountdowns();
 }
+
+function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
 
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
@@ -267,16 +269,14 @@ function formatDelta(ms) {
   return `${mins} min`;
 }
 
-function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
-
 function startClock() {
   setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
-// STARTUP: initialiser date, clock, data og polls
+// STARTUP: initialiser dato, ur, data og polls
 updateDate();
-setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
+setInterval(updateDate, 60 * 1000);
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
