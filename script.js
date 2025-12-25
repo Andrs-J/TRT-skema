@@ -1,4 +1,5 @@
-// script.js - Opdateret så "Tilmelding:" håndterer dropdown-værdien direkte fra Google Sheets.
+// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
+// Opdater/fuldskærm-knapper er fjernet.
 
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
 const SHEET_NAME = "Sheet1";
@@ -50,7 +51,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag + dato i header
+// Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -91,51 +92,37 @@ async function fetchActivities() {
 function processData(rows) {
   const today = new Date();
   const processed = [];
-
-  rows.forEach((r) => {
+  rows.forEach(r => {
     const startParsed = parseHM(r.Tid);
     const endParsed = parseHM(r.Slut);
     if (!startParsed || !endParsed) return;
-
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate() + 1);
-
-    // Fortolk dropdown-værdierne fra Google Sheets
-    let tilmeldingStatus = r.Tilmelding || "Nej"; // Standard til "Nej"
-    if (tilmeldingStatus !== "Nej" && tilmeldingStatus !== "Ja, ring på tlf." && tilmeldingStatus !== "Ja, via tilmeldingsseddel") {
-      tilmeldingStatus = "Nej"; // Fallback til "Nej", hvis værdien er ukendt
-    }
-
+    if (end < start) end.setDate(end.getDate()+1);
     processed.push({
       raw: r,
       start,
       end,
-      aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
-      sted: (r.Sted || "").replace(/"/g, "").trim(),
-      tilmelding: tilmeldingStatus, // Gem værdien
+      aktivitet: (r.Aktivitet || "").replace(/"/g,"").trim(),
+      sted: (r.Sted || "").replace(/"/g,"").trim(),
+      tilmelding: (r.Tilmelding || "").toLowerCase().trim()
     });
   });
-
   const nowTime = now();
-  const all = processed.filter(
-    (p) => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0)
-  );
-  all.sort((a, b) => a.start - b.start);
+  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
+  all.sort((a,b) => a.start - b.start);
   return all;
 }
 
-// Render / vis aktiviteter
+// Render / vis rækker
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
   container.innerHTML = "";
 
   const nowTime = now();
-  const upcoming = [],
-    past = [];
-
-  list.forEach((item) => {
+  const upcoming = [], past = [];
+  list.forEach(item => {
     if (item.end.getTime() > nowTime.getTime()) upcoming.push(item);
     else past.push(item);
   });
@@ -175,25 +162,124 @@ function renderActivities(list) {
     const meta = document.createElement("div");
     meta.className = "meta";
 
-    const tilmelding = document.createElement("div");
-    tilmelding.className = "signup";
-    tilmelding.textContent = `Tilmelding: ${item.tilmelding}`; // Tilføj tilmeldingsinfo
-    meta.appendChild(tilmelding);
+    // Tilmelding: split i label + status. Label neutral, status farvet.
+    const signup = document.createElement("div");
+    signup.className = "signup";
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "signup-label";
+    labelSpan.textContent = "Tilmelding:";
+
+    const statusSpan = document.createElement("span");
+    statusSpan.className = "signup-status";
+
+    const t = (item.tilmelding || "").trim();
+    if (t === "ja") {
+      statusSpan.textContent = " JA (Ring)";
+      statusSpan.classList.add("ja");
+    } else if (t === "nej" || t === "nej.") {
+      statusSpan.textContent = " NEJ";
+      statusSpan.classList.add("nej");
+    } else if (t) {
+      // ukendt tekst - vis pænt
+      statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
+    } else {
+      statusSpan.textContent = "";
+    }
+
+    signup.appendChild(labelSpan);
+    signup.appendChild(statusSpan);
+    meta.appendChild(signup);
+
+    const countdown = document.createElement("div");
+    countdown.className = "countdown";
+    countdown.dataset.start = String(item.start.getTime());
+    countdown.dataset.end = String(item.end.getTime());
+    meta.appendChild(countdown);
 
     row.appendChild(meta);
     return row;
   }
 
-  upcoming.forEach((item) => {
-    const isCurr =
-      item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime();
+  upcoming.forEach(item => {
+    const isCurr = (item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime());
     const row = createRow(item, false);
     if (isCurr) row.classList.add("current");
     container.appendChild(row);
   });
 
-  past.forEach((item) => {
+  past.forEach(item => {
     const row = createRow(item, true);
     container.appendChild(row);
   });
+
+  updateAllCountdowns();
 }
+
+function updateAllCountdowns() {
+  const els = document.querySelectorAll(".activity-row .countdown");
+  const nowMs = Date.now();
+  els.forEach(el => {
+    const start = parseInt(el.dataset.start, 10);
+    const end = parseInt(el.dataset.end, 10);
+    if (isNaN(start) || isNaN(end)) { el.textContent = ""; return; }
+
+    const row = el.closest(".activity-row");
+    const signupEl = row.querySelector(".meta .signup");
+    const normalInfo = row.querySelector(".normal-info");
+    const pastCenter = row.querySelector(".past-center");
+
+    if (nowMs >= start && nowMs <= end) {
+      const diff = end - nowMs;
+      el.textContent = `Slutter om: ${formatDelta(diff)}`;
+      row.classList.remove("past");
+      row.classList.add("current");
+      if (signupEl) signupEl.style.opacity = "";
+      if (normalInfo) normalInfo.style.opacity = "";
+      if (pastCenter) pastCenter.style.display = "none";
+    } else if (nowMs < start) {
+      const diff = start - nowMs;
+      el.textContent = `Starter om: ${formatDelta(diff)}`;
+      row.classList.remove("past");
+      row.classList.remove("current");
+      if (signupEl) signupEl.style.opacity = "";
+      if (normalInfo) normalInfo.style.opacity = "";
+      if (pastCenter) pastCenter.style.display = "none";
+    } else {
+      el.textContent = "";
+      row.classList.add("past");
+      row.classList.remove("current");
+      if (signupEl) signupEl.style.opacity = "0.7";
+      if (normalInfo) normalInfo.style.opacity = "0.8";
+      if (pastCenter) pastCenter.style.display = "";
+    }
+  });
+}
+
+function formatDelta(ms) {
+  if (ms <= 0) return "0 min";
+  const mins = Math.floor(ms / 60000);
+  if (mins >= 60) {
+    const hours = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return rem === 0 ? `${hours} t` : `${hours} t ${rem} min`;
+  }
+  return `${mins} min`;
+}
+
+function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
+
+function startClock() {
+  setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
+  if ($("clock")) $("clock").innerText = formatTime(new Date());
+}
+
+// STARTUP: initialiser date, clock, data og polls
+updateDate();
+setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
+fetchActivities();
+startClock();
+setInterval(fetchActivities, 60 * 1000);
+setInterval(updateAllCountdowns, 1000);
+pollForChanges();
+setInterval(pollForChanges, POLL_INTERVAL_MS);
