@@ -8,32 +8,24 @@
 </head>
 <body>
   <header>
-    <!-- Dag og dato erstatter brand-titel (TRT-aktiviteter) -->
     <div class="brand">
-      <!-- Dag og dato vises her -->
-      <div id="currentDate" class="current-date" aria-live="polite"></div>
+      <h1>TRT-aktiviteter</h1>
     </div>
-
+    <!-- Dato (midt) -->
+    <div id="currentDate" class="current-date" aria-live="polite"></div>
     <div class="meta">
-      <!-- Ur vises uændret -->
       <div id="clock" aria-live="polite" class="clock">--:--</div>
     </div>
   </header>
-
   <main>
     <section class="hero" aria-labelledby="activities-title">
-      <div id="activities" class="activities-list" aria-live="polite">
-        <!-- JS indsætter rækker her -->
-      </div>
-
+      <div id="activities" class="activities-list" aria-live="polite"></div>
       <div id="message" class="message" aria-live="polite"></div>
     </section>
   </main>
-
   <footer>
     <small>Sidst opdateret: <span id="lastUpdated">–</span></small>
   </footer>
-
   <script src="script.js"></script>
 </body>
 </html>
