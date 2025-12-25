@@ -1,4 +1,4 @@
-// script.js - Kompatibel med v20 design: håndterer sted, tilmelding og aktiviteter korrekt
+// script.js - Tidligere version med korrekt sheets integration
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const urlBase = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
