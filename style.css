@@ -86,15 +86,6 @@ main {
   font-size: var(--fs-row-time);
   font-weight: 800;
   color: var(--accent);
-  flex: 1; /* Sørger for, at tid fylder sin del */
-  text-align: left;
-}
-
-.activity-row .activity-info {
-  flex: 1; /* Sørger for, at aktivitet fylder sin del */
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 
 .activity-row .title {
@@ -109,7 +100,10 @@ main {
 
 .activity-row .signup {
   font-size: var(--fs-signup);
+}
+
+.cancelled-label {
+  font-size: var(--fs-cancelled-label);
   font-weight: bold;
-  text-align: center; /* Centrerer teksten horisontalt */
-  flex: 1; /* Sørger for, at signup fylder sin del */
+  color: var(--cancelled);
 }
