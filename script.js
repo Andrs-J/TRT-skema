@@ -17,15 +17,15 @@ function processData(rows) {
   const daysMap = {};
 
   rows.forEach((r, index) => {
-    if (!r.Aktivitet && !r.Tid) return; // Spring tomme rækker over
+    if (!r.Aktivitet && !r.Tid) return;
 
-    const day = rows[0].Dag || "Ukendt Dag"; // Dagen er i cellen A1
-    const tid = r.Tid || "—"; // Tid starter fra A3-A15
-    const slut = r.Slut || "—"; // Slut starter fra B3-B15
-    const aktivitet = r.Aktivitet || "Ukendt Aktivitet"; // Aktivitet starter fra C3-C15
-    const sted = r.Sted || "Ukendt Sted"; // Sted starter fra D3-D15
-    const tilmelding = r.Tilmelding === "TRUE"; // Flueben = TRUE
-    const aflyst = r.Aflyst === "TRUE"; // Flueben = TRUE
+    const day = rows[0].Dag || "Ukendt Dag";
+    const tid = r.Tid || "—";
+    const slut = r.Slut || "—";
+    const aktivitet = r.Aktivitet || "Ukendt Aktivitet";
+    const sted = r.Sted || "Ukendt Sted";
+    const tilmelding = r.Tilmelding === "TRUE";
+    const aflyst = r.Aflyst === "TRUE";
 
     if (!daysMap[day]) {
       daysMap[day] = [];
@@ -41,7 +41,7 @@ function processData(rows) {
     });
   });
 
-  return daysMap; // Returner grupperede aktiviteter
+  return daysMap;
 }
 
 function renderActivities(data) {
@@ -68,23 +68,22 @@ function renderActivities(data) {
       timeDiv.textContent = `${item.tid} - ${item.slut}`;
       row.appendChild(timeDiv);
 
+      const activityDiv = document.createElement("div");
+      activityDiv.className = "activity-place";
       const titleDiv = document.createElement("div");
       titleDiv.className = "title";
       titleDiv.textContent = item.aktivitet;
-      row.appendChild(titleDiv);
-
       const placeDiv = document.createElement("div");
       placeDiv.className = "place";
       placeDiv.textContent = item.sted;
-      row.appendChild(placeDiv);
+      activityDiv.appendChild(titleDiv);
+      activityDiv.appendChild(placeDiv);
+      row.appendChild(activityDiv);
 
       const signupDiv = document.createElement("div");
       signupDiv.className = "signup";
-      if (item.tilmelding) {
-        signupDiv.innerHTML = '<span class="signup-yes">JA</span>'; // Rød for JA
-      } else {
-        signupDiv.innerHTML = '<span class="signup-no">NEJ</span>'; // Grøn for NEJ
-      }
+      signupDiv.textContent = `Tilmelding: ${item.tilmelding ? "Ja" : "Nej"}`;
+      signupDiv.classList.add(item.tilmelding ? "signup-yes" : "signup-no");
       row.appendChild(signupDiv);
 
       if (item.aflyst) {
