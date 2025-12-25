@@ -55,16 +55,16 @@ function triggerHardReload() {
 function updateDate() {
   const d = new Date();
   
-  // Ugedag, dato, måned og år sættes manuelt
+  // Formatering af hver komponent
   const weekday = d.toLocaleDateString("da-DK", { weekday: "long" });
-  const day = d.getDate(); // Får dato
+  const day = d.getDate();
   const month = d.toLocaleDateString("da-DK", { month: "long" });
-  const year = d.getFullYear(); // Får år
-  
-  // Kombinér til ønsket format
-  const formatted = `${weekday} - ${day} ${month} ${year}`;
-  
-  // Opdater `currentDate` i HTML
+  const year = d.getFullYear();
+
+  // Kombiner til ønsket format "Torsdag - 25 December 2025"
+  const formatted = `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} - ${day} ${month} ${year}`;
+
+  // Sæt den formaterede tekst i `currentDate` elementet
   const el = $("currentDate");
   if (el) el.textContent = formatted;
 }
