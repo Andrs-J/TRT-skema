@@ -7,12 +7,19 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header id="stickyHeader" class="sticky-header">
-    <h1>TRT Aktiviteter</h1>
-    <div id="stickyClock" class="clock">--:--</div>
+  <header>
+    <div class="brand">
+      <h1>TRT Aktiviteter</h1>
+    </div>
+    <div class="current-date" id="currentDate"></div>
+    <div class="meta">
+      <div class="clock" id="clock" aria-live="polite">--:--</div>
+    </div>
   </header>
   <main>
-    <div id="activitiesContainer" class="activities-container" aria-live="polite"></div>
+    <div id="activities" class="activities-list" aria-live="polite">
+      <!-- Dynamiske rækker indsættes her via script.js -->
+    </div>
   </main>
   <footer>
     <small>Sidst opdateret: <span id="lastUpdated">–</span></small>
