@@ -1,4 +1,4 @@
-// script.js - Tidligere version med korrekt sheets integration
+// script.js - Komplet kode til Google Sheets dataintegration og fejlhåndtering
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const urlBase = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
@@ -32,28 +32,35 @@ function updateDate() {
 async function fetchActivities() {
   const url = `${urlBase}?_=${Date.now()}`;
   try {
+    console.log("API-anmodning sendt til:", url); // Log URL’en der bruges
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Fejl ved hent`);
+    
     const data = await res.json();
-    renderActivities(data);
+    console.log("Modtaget data:", data); // Log hentede data
+    renderActivities(data); // Fortsæt hvis data er korrekt
+    
     const lastUpdated = $("lastUpdated");
     if (lastUpdated) lastUpdated.textContent = new Date().toLocaleString("da-DK");
   } catch (err) {
-    console.error("Fejl ved hent:", err);
-    alert("Kunne ikke hente aktiviteter fra Google Sheet.");
+    console.error("Fetch-fejl:", err); // Log fuld fejl til fejlsøgning
+    alert(`Kunne ikke hente aktiviteter fra Google Sheet:\n${err.message}`);
   }
 }
 
 function renderActivities(rows) {
+  console.log("Data til rendering:", rows); // Log data der skal behandles
   const container = $("activities");
   if (!container) return;
 
-  const nowTime = now();
   container.innerHTML = "";
   rows.forEach((row, idx) => {
     const startParsed = parseHM(row.Tid);
     const endParsed = parseHM(row.Slut);
-    if (!startParsed || !endParsed) return;
+    if (!startParsed || !endParsed) {
+      console.error("Ugyldig række fundet:", row);
+      return; 
+    } 
 
     const start = new Date();
     start.setHours(startParsed.hh, startParsed.mm, 0);
@@ -61,8 +68,8 @@ function renderActivities(rows) {
     const end = new Date();
     end.setHours(endParsed.hh, endParsed.mm, 0);
 
-    const isPast = nowTime > end;
-    const isCurrent = nowTime >= start && nowTime <= end;
+    const isPast = now() > end;
+    const isCurrent = now() >= start && now() <= end;
 
     const activityRow = document.createElement("div");
     activityRow.className = "activity-row";
@@ -141,21 +148,3 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchActivities();
   startClock();
 });
-
-async function fetchActivities() {
-  const url = `${urlBase}?_=${Date.now()}`;
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: Fejl ved hent`);
-    
-    const data = await res.json();
-    console.log("Hentet data:", data); // Debug: se rå data der hentes
-    renderActivities(data);
-    
-    const lastUpdated = $("lastUpdated");
-    if (lastUpdated) lastUpdated.textContent = new Date().toLocaleString("da-DK");
-  } catch (err) {
-    console.error("Fetch-fejl:", err);
-    alert(`Kunne ikke hente aktiviteter fra Google Sheet:\n${err.message}`);
-  }
-}
