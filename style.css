@@ -58,16 +58,16 @@ header {
 
 .current-date {
   flex: 1;
-  text-align: left; /* Juster dag og dato til venstre */
-  font-size: 1.6rem; /* Justér størrelse til tekstens hierarki */
-  font-weight: 700;
-  color: var(--accent); /* Fremhæv farven */
-  padding-left: var(--gutter-side); /* Tilføj venstre margin */
+  text-align: left; /* Hold dag og dato til venstre */
+  font-size: 2rem; /* Øg størrelsen for mere fremhævning */
+  font-weight: 700; /* Fremhæv teksten */
+  color: var(--accent);
+  padding-left: var(--gutter-side); /* Sørg for afstand til venstre */
 }
 
 .clock {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 2rem; /* Øg størrelsen, så den matcher dag og dato */
+  font-weight: 700; /* Hold urteksten fremhævet */
   color: var(--accent);
 }
 
