@@ -1,4 +1,4 @@
-/* style.css - komplet styling med fast topbar og dagoverskrifter */
+/* style.css - fix til design med klokkeslæt og afsluttet tekst */
 :root{
   --bg: #041021;
   --accent: #ffd166;
@@ -9,6 +9,7 @@
   --header-height: 72px;
   --day-header-spacing: 24px;
   --day-header-font-size: 24px;
+  --fs-header-size: 28px; /* Font size for titel og klokkeslæt */
 }
 
 body{
@@ -36,14 +37,15 @@ body{
 }
 .sticky-header h1{
   margin: 0;
-  font-size: 26px;
+  font-size: var(--fs-header-size);
   font-weight: 900;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
 }
 .sticky-header .clock{
-  font-size: 22px;
+  font-size: var(--fs-header-size);
   font-weight: 800;
   color: var(--accent);
+  margin-left: 18px; /* Flytter klokkeslæt lidt ind */
 }
 
 /* === Aktivitetscontainer === */
@@ -80,6 +82,22 @@ body{
 .activity-time{
   font-size: 16px;
   color: var(--muted);
+}
+.activity-row.past{
+  background: rgba(90, 90, 90, 0.3);
+  opacity: 0.65;
+  position: relative;
+}
+.activity-row.past::after{
+  content: "Afsluttet";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  color: var(--accent);
+  font-weight: 700;
+  opacity: 0.9;
 }
 @media(max-width:600px){
   .sticky-header h1{ font-size: 20px; }
