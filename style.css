@@ -70,8 +70,9 @@ main {
   border-radius: 8px;
   padding: 14px 18px;
   color: #fff;
-  display: flex;
-  align-items: center;
+  display: flex; /* Flex layout for alignment */
+  justify-content: space-between; /* Space between title and tilmelding */
+  align-items: center; /* Center content vertically */
   gap: 20px;
   min-height: 96px;
   transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
@@ -100,8 +101,10 @@ main {
 
 .activity-row .signup {
   font-size: var(--fs-signup);
-  margin-left: auto; /* Skub tilmelding mod højre */
-  text-align: right; /* Juster Tilmelding tekstryk mod højre */
+  margin-left: auto; /* Push tilmeldingssektionen til højre */
+  text-align: right; /* Align text inside tilmelding to the right */
+  max-width: 30%; /* Limit width for long text */
+  word-wrap: break-word; /* Wrap long text properly */
 }
 
 .cancelled-label {
