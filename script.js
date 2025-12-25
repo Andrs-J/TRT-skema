@@ -165,7 +165,7 @@ function renderActivities(list) {
     } else if (item.start.getTime() - nowMs <= 30 * 60 * 1000) {
       status = "Starter snart";
     } else {
-      status = "Afventer";
+      status = "Kommende aktivitet";
     }
 
     const statusDiv = document.createElement("div");
