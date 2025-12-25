@@ -242,3 +242,38 @@ setInterval(fetchActivities, 60 * 1000);
 setInterval(updateAllCountdowns, 1000);
 pollForChanges();
 setInterval(pollForChanges, POLL_INTERVAL_MS);
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Funktion til at tilføje en ny dag og dato sektion
+    function addDayHeaderForTomorrow() {
+        // Find containeren, hvor aktiviteterne vises
+        const container = document.getElementById("activities");
+        if (!container) {
+            console.error("Container ikke fundet: 'activities'!");
+            return; // Undgå yderligere kørsel, hvis "activities" ikke findes
+        }
+
+        // Beregn dato for i morgen
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1); // Gå én dag frem i kalenderen
+
+        // Formater dato til dansk: "Fredag - 12. December 2025"
+        const formattedDate = tomorrow.toLocaleDateString("da-DK", {
+            weekday: "long", // Hent dagen (eks.: Fredag)
+            day: "numeric",  // Tilføj dato
+            month: "long",   // Tilføj månedens navn
+            year: "numeric"  // Tilføj årstal
+        });
+
+        // Opret et nyt element (dagens header)
+        const dayHeader = document.createElement("div");
+        dayHeader.className = "day-header"; // Klasse til styling
+        dayHeader.textContent = `${formattedDate.charAt(0).toUpperCase()}${formattedDate.slice(1)}`; // Kapitaliser første bogstav i ugedagen
+
+        // Tilføj det nederst i aktiviteterne
+        container.appendChild(dayHeader);
+    }
+
+    // Kald funktionen for automatisk at tilføje dag 2 (i morgen)
+    addDayHeaderForTomorrow();
+});
