@@ -16,7 +16,7 @@ function updateDate(d = new Date()) {
 function processData(rows) {
   const daysMap = {};
 
-  rows.forEach((r, index) => {
+  rows.forEach(r => {
     if (!r.Aktivitet && !r.Tid) return;
 
     const day = rows[0].Dag || "Ukendt Dag";
@@ -37,7 +37,9 @@ function processData(rows) {
       aktivitet,
       sted,
       tilmelding,
-      aflyst
+      aflyst,
+      startTime: new Date(`1970-01-01T${tid}:00`),
+      endTime: new Date(`1970-01-01T${slut}:00`)
     });
   });
 
@@ -63,13 +65,15 @@ function renderActivities(data) {
       const row = document.createElement("div");
       row.className = "activity-row";
 
+      // Tid
       const timeDiv = document.createElement("div");
       timeDiv.className = "time";
       timeDiv.textContent = `${item.tid} - ${item.slut}`;
       row.appendChild(timeDiv);
 
+      // Aktivitet og sted
       const activityDiv = document.createElement("div");
-      activityDiv.className = "activity-place";
+      activityDiv.className = "activity-info";
       const titleDiv = document.createElement("div");
       titleDiv.className = "title";
       titleDiv.textContent = item.aktivitet;
@@ -80,19 +84,23 @@ function renderActivities(data) {
       activityDiv.appendChild(placeDiv);
       row.appendChild(activityDiv);
 
-      const signupDiv = document.createElement("div");
-      signupDiv.className = "signup";
-      signupDiv.textContent = `Tilmelding: ${item.tilmelding ? "Ja" : "Nej"}`;
-      signupDiv.classList.add(item.tilmelding ? "signup-yes" : "signup-no");
-      row.appendChild(signupDiv);
+      // Status i midten
+      const statusDiv = document.createElement("div");
+      statusDiv.className = "status";
+      const nowTime = now();
 
       if (item.aflyst) {
-        const cancelledDiv = document.createElement("div");
-        cancelledDiv.className = "cancelled";
-        cancelledDiv.textContent = "Aflyst";
-        row.classList.add("cancelled");
-        row.appendChild(cancelledDiv);
+        statusDiv.textContent = "Aflyst";
+        statusDiv.classList.add("status-cancelled");
+      } else if (nowTime > item.endTime) {
+        statusDiv.textContent = "Afsluttet";
+        statusDiv.classList.add("status-finished");
+      } else {
+        statusDiv.textContent = `Tilmelding: ${item.tilmelding ? "Ja" : "Nej"}`;
+        statusDiv.classList.add(item.tilmelding ? "status-yes" : "status-no");
       }
+
+      row.appendChild(statusDiv);
 
       section.appendChild(row);
     });
