@@ -89,82 +89,46 @@ async function fetchActivities() {
 }
 
 function processData(rows) {
-    const today = new Date();
-    const processed = {
-        Mandag: [],
-        Tirsdag: []
-    };
-
-    rows.forEach(r => {
-        // Processér data for Mandag fra kolonner A, B, C, D
-        const startMonday = parseHM(r.A); // Kolonne A = Starttid Mandag
-        const endMonday = parseHM(r.B); // Kolonne B = Sluttid Mandag
-        if (startMonday && endMonday) {
-            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startMonday.hh, startMonday.mm);
-            const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endMonday.hh, endMonday.mm);
-            if (end < start) end.setDate(end.getDate() + 1); // Håndtér slut næste dag, hvis slut < start
-            processed.Mandag.push({
-                aktivitet: (r.C || "").trim(), // Kolonne C = Aktivitet
-                sted: (r.D || "").trim(), // Kolonne D = Sted
-                start,
-                end
-            });
-        }
-
-        // Processér data for Tirsdag fra kolonner F, G, H, I
-        const startTuesday = parseHM(r.F); // Kolonne F = Starttid Tirsdag
-        const endTuesday = parseHM(r.G); // Kolonne G = Sluttid Tirsdag
-        if (startTuesday && endTuesday) {
-            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, startTuesday.hh, startTuesday.mm); // +1 for næste dag
-            const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, endTuesday.hh, endTuesday.mm);
-            if (end < start) end.setDate(end.getDate() + 1); // Håndtér slut næste dag, hvis slut < start
-            processed.Tirsdag.push({
-                aktivitet: (r.H || "").trim(), // Kolonne H = Aktivitet
-                sted: (r.I || "").trim(), // Kolonne I = Sted
-                start,
-                end
-            });
-        }
+  const today = new Date();
+  const processed = [];
+  rows.forEach(r => {
+    const startParsed = parseHM(r.Tid);
+    const endParsed = parseHM(r.Slut);
+    if (!startParsed || !endParsed) return;
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
+    let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
+    if (end < start) end.setDate(end.getDate() + 1);
+    processed.push({
+      raw: r,
+      start,
+      end,
+      aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
+      sted: (r.Sted || "").replace(/"/g, "").trim(),
     });
-
-    // Sortér aktiviteter for hver dag ud fra starttidspunkt
-    processed.Mandag.sort((a, b) => a.start - b.start);
-    processed.Tirsdag.sort((a, b) => a.start - b.start);
-
-    return processed;
+  });
+  const nowTime = now();
+  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0));
+  all.sort((a, b) => a.start - b.start);
+  return all;
 }
 
 // Render / vis rækker
-function renderActivities(dataByDay) {
-    const container = $("activities");
-    if (!container) return;
+function renderActivities(list) {
+  const container = $("activities");
+  if (!container) return;
+  container.innerHTML = "";
 
-    container.innerHTML = ""; // Ryd eksisterende indhold
+  const nowTime = now();
+  const upcoming = [], past = [];
+  list.forEach(item => {
+    if (item.end.getTime() > nowTime.getTime()) upcoming.push(item);
+    else past.push(item);
+  });
 
-    // Render aktiviteter for hver dag
-    Object.keys(dataByDay).forEach(day => {
-        const daySection = document.createElement("div");
-        daySection.className = "day-section";
-
-        const dayTitle = document.createElement("h2");
-        dayTitle.textContent = day; // F.eks. "Mandag" eller "Tirsdag"
-        daySection.appendChild(dayTitle);
-
-        const activities = dataByDay[day];
-        activities.forEach(item => {
-            const row = createRow(item);
-            daySection.appendChild(row);
-        });
-
-        container.appendChild(daySection);
-    });
-
-    updateAllCountdowns();
-}
-
-  function createRow(item) {
+  function createRow(item, isPastInitial) {
     const row = document.createElement("div");
     row.className = "activity-row";
+    if (isPastInitial) row.classList.add("past");
 
     const timeDiv = document.createElement("div");
     timeDiv.className = "time";
@@ -188,20 +152,20 @@ function renderActivities(dataByDay) {
     tp.appendChild(normalInfo);
     row.appendChild(tp);
 
-    // Dynamisk status
+    // Dynamisk status baseret på klokkeslæt
     const meta = document.createElement("div");
     meta.className = "meta";
     const nowMs = Date.now();
 
     let status = "";
     if (nowMs >= item.end.getTime()) {
-        status = "Afsluttet";
-    } else if (nowMs >= item.start.getTime()) {
-        status = "Igang";
+      status = "Afsluttet";
+    } else if (nowMs >= item.start.getTime() && nowMs < item.end.getTime()) {
+      status = "Igang";
     } else if (item.start.getTime() - nowMs <= 30 * 60 * 1000) {
-        status = "Starter snart";
+      status = "Starter snart";
     } else {
-        status = "Afventer";
+      status = "Kommende";
     }
 
     const statusDiv = document.createElement("div");
@@ -212,7 +176,7 @@ function renderActivities(dataByDay) {
     row.appendChild(meta);
 
     return row;
-}
+  }
 
   upcoming.forEach(item => {
     const row = createRow(item, false);
