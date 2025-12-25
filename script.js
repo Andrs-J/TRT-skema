@@ -1,4 +1,4 @@
-// script.js - render alle felter (tid, sted, aktivitet, tilmelding)
+// script.js - Sørger for korrekt afsluttet markering og render alle felter
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
@@ -13,20 +13,15 @@ function updateClock() {
 setInterval(updateClock, 1000);
 
 async function fetchActivities() {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    renderActivities(groupByDay(data));
-  } catch (err) {
-    console.error("Fejl ved hent:", err);
-  }
+  const res = await fetch(url, { cache: "no-store" });
+  const data = await res.json();
+  renderActivities(groupByDay(data));
 }
 
 function groupByDay(data) {
   const grouped = {};
   data.forEach((item) => {
-    const date = item.Dato || "2025-12-25"; // Brug en dato-kolonne fra sheet'et
+    const date = item.Dato || "2025-12-25";
     if (!grouped[date]) grouped[date] = [];
     grouped[date].push(item);
   });
@@ -35,8 +30,6 @@ function groupByDay(data) {
 
 function renderActivities(days) {
   const container = $("activitiesContainer");
-  if (!container) return;
-
   container.innerHTML = "";
   const now = new Date();
 
@@ -49,20 +42,21 @@ function renderActivities(days) {
     header.textContent = new Date(date).toLocaleDateString("da-DK", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     });
+
     dayRow.appendChild(header);
 
     days[date].forEach((activity) => {
       const row = document.createElement("div");
-      const activityEnd = parseHM(activity.Slut);
-      const activityEndDate = new Date(date);
-      activityEndDate.setHours(activityEnd.hh, activityEnd.mm);
+      const endParsed = parseHM(activity.Slut);
+      const endTime = new Date(date);
+      endTime.setHours(endParsed.hh, endParsed.mm);
 
       row.className = "activity-row";
-      if (activityEndDate < now) row.classList.add("past");
+      if (now > endTime) row.classList.add("past");
 
       const title = document.createElement("div");
       title.className = "activity-title";
-      title.textContent = activity.Aktivitet || "Ingen aktivitet";
+      title.textContent = activity.Aktivitet;
 
       const time = document.createElement("div");
       time.className = "activity-time";
@@ -70,12 +64,12 @@ function renderActivities(days) {
 
       const place = document.createElement("div");
       place.className = "activity-place";
-      place.textContent = `Sted: ${activity.Sted || "Ukendt"}`;
+      place.textContent = `Sted: ${activity.Sted}`;
 
       const signup = document.createElement("div");
       signup.className = "activity-signup";
-      signup.textContent = `Tilmelding: ${activity.Tilmelding || "Nej"}`;
-      if ((activity.Tilmelding || "").toLowerCase() === "ja") signup.classList.add("ja");
+      signup.textContent = `Tilmelding: ${activity.Tilmelding}`;
+      if (activity.Tilmelding.toLowerCase() === "ja") signup.classList.add("ja");
 
       row.appendChild(title);
       row.appendChild(time);
@@ -88,12 +82,11 @@ function renderActivities(days) {
   });
 }
 
-function parseHM(str) {
-  const parts = str.split(":");
-  return { hh: parseInt(parts[0], 10), mm: parseInt(parts[1], 10) };
+function parseHM(timeStr) {
+  const [hh, mm] = timeStr.split(":").map(Number);
+  return { hh, mm };
 }
 
-// Startup
 document.addEventListener("DOMContentLoaded", () => {
   fetchActivities();
   updateClock();
