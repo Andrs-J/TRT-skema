@@ -1,5 +1,5 @@
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
-const SHEET_NAME = "Sheet1";
+const SHEET_NAME = "Uge 1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
@@ -31,6 +31,10 @@ function processData(rows) {
       daysMap[day] = [];
     }
 
+    // Parse start og end time for status check
+    const startTime = new Date(`1970-01-01T${tid}:00`);
+    const endTime = new Date(`1970-01-01T${slut}:00`);
+
     daysMap[day].push({
       tid,
       slut,
@@ -38,8 +42,8 @@ function processData(rows) {
       sted,
       tilmelding,
       aflyst,
-      startTime: new Date(`1970-01-01T${tid}:00`),
-      endTime: new Date(`1970-01-01T${slut}:00`)
+      startTime,
+      endTime
     });
   });
 
@@ -92,16 +96,17 @@ function renderActivities(data) {
       if (item.aflyst) {
         statusDiv.textContent = "Aflyst";
         statusDiv.classList.add("status-cancelled");
+        row.classList.add("cancelled"); // Fade-out når aflyst
       } else if (nowTime > item.endTime) {
         statusDiv.textContent = "Afsluttet";
         statusDiv.classList.add("status-finished");
+        row.classList.add("finished"); // Fade-out når afsluttet
       } else {
         statusDiv.textContent = `Tilmelding: ${item.tilmelding ? "Ja" : "Nej"}`;
         statusDiv.classList.add(item.tilmelding ? "status-yes" : "status-no");
       }
 
       row.appendChild(statusDiv);
-
       section.appendChild(row);
     });
 
@@ -125,6 +130,7 @@ function showMessage(txt) {
   if ($("message")) $("message").innerText = txt || "";
 }
 
+// Start processen
 updateDate();
 fetchActivities();
-setInterval(updateDate, 60 * 1000);
+setInterval(updateDate, 60 * 1000); // Opdater dato hvert minut
