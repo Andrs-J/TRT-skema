@@ -54,10 +54,14 @@ function triggerHardReload() {
 // Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
-  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  const formatted = d.toLocaleDateString("da-DK", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).replace(" ", " - "); // Tilføjer "-" i formatet
   const el = $("currentDate");
-  if (el) el.textContent = text;
+  if (el) el.textContent = formatted;
 }
 
 // HENT + PROCESS DATA
