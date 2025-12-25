@@ -7,26 +7,16 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Fixed bar -->
   <header id="stickyHeader" class="sticky-header">
-    <div class="brand">
-      <h1>TRT Aktiviteter</h1>
-    </div>
-    <!-- Klokkeslæt -->
-    <div id="stickyClock" class="clock" aria-live="polite">--:--</div>
+    <h1>TRT Aktiviteter</h1>
+    <div id="stickyClock" class="clock">--:--</div>
   </header>
-
   <main>
-    <!-- Sektioner per dag dynamisk fyldt af JS -->
-    <div id="activitiesContainer" class="activities-container" aria-live="polite">
-      <!-- Dynamiske rækker -->
-    </div>
+    <div id="activitiesContainer" class="activities-container" aria-live="polite"></div>
   </main>
-
   <footer>
     <small>Sidst opdateret: <span id="lastUpdated">–</span></small>
   </footer>
-
   <script src="script.js"></script>
 </body>
 </html>
