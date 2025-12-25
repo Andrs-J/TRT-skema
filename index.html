@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Aktiviteter – TRT (Udsigten)</title>
+  <title>Aktiviteter – TRT</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,22 +12,19 @@
       <h1>Dagens aktiviteter</h1>
     </div>
 
-    <!-- Her vises dag + dato -->
+    <!-- Her vises dag + dato (midt i toppen) -->
     <div id="currentDate" class="current-date" aria-live="polite"></div>
 
     <div class="meta">
       <div id="clock" aria-live="polite" class="clock">--:--</div>
-      <!-- Eventuelle knapper kan genindsættes her -->
     </div>
   </header>
 
   <main>
-    <!-- Sektion til aktiviteter -->
     <section class="hero" aria-labelledby="activities-title">
       <div id="activities" class="activities-list" aria-live="polite">
-        <!-- JS indsætter dage og rækker dynamisk her -->
+        <!-- JS indsætter rækker dynamisk her -->
       </div>
-
       <div id="message" class="message" aria-live="polite"></div>
     </section>
   </main>
