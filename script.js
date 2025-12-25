@@ -1,4 +1,4 @@
-// script.js - komplet fil, med dynamisk dagblokke og fast topbar
+// script.js - fix til rendering med past-aktiviteter og klokkeslæt i topbar
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
@@ -6,11 +6,11 @@ const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 const $ = (id) => document.getElementById(id);
 const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 
-function updateDate() {
+function updateClock() {
   const stickyClock = $("stickyClock");
   if (stickyClock) stickyClock.textContent = formatTime(new Date());
 }
-setInterval(updateDate, 1000); // opdater tid hvert sekund
+setInterval(updateClock, 1000);
 
 async function fetchActivities() {
   try {
@@ -38,6 +38,8 @@ function renderActivities(days) {
   if (!container) return;
 
   container.innerHTML = "";
+  const now = new Date();
+
   Object.keys(days).forEach((date) => {
     const dayRow = document.createElement("div");
     dayRow.className = "day-section";
@@ -51,7 +53,12 @@ function renderActivities(days) {
 
     days[date].forEach((activity) => {
       const row = document.createElement("div");
+      const activityEnd = parseHM(activity.Slut);
+      const activityEndDate = new Date(date);
+      activityEndDate.setHours(activityEnd.hh, activityEnd.mm);
+
       row.className = "activity-row";
+      if (activityEndDate < now) row.classList.add("past");
 
       const title = document.createElement("div");
       title.className = "activity-title";
@@ -70,8 +77,13 @@ function renderActivities(days) {
   });
 }
 
+function parseHM(str) {
+  const parts = str.split(":");
+  return { hh: parseInt(parts[0], 10), mm: parseInt(parts[1], 10) };
+}
+
 // Startup
 document.addEventListener("DOMContentLoaded", () => {
   fetchActivities();
-  updateDate();
+  updateClock();
 });
