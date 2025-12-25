@@ -54,12 +54,17 @@ function triggerHardReload() {
 // Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
-  const formatted = d.toLocaleDateString("da-DK", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).replace(" ", " - "); // Tilføjer "-" i formatet
+  
+  // Ugedag, dato, måned og år sættes manuelt
+  const weekday = d.toLocaleDateString("da-DK", { weekday: "long" });
+  const day = d.getDate(); // Får dato
+  const month = d.toLocaleDateString("da-DK", { month: "long" });
+  const year = d.getFullYear(); // Får år
+  
+  // Kombinér til ønsket format
+  const formatted = `${weekday} - ${day} ${month} ${year}`;
+  
+  // Opdater `currentDate` i HTML
   const el = $("currentDate");
   if (el) el.textContent = formatted;
 }
