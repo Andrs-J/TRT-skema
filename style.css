@@ -100,6 +100,8 @@ main {
 
 .activity-row .signup {
   font-size: var(--fs-signup);
+  margin-left: auto; /* Skub tilmelding mod højre */
+  text-align: right; /* Juster Tilmelding tekstryk mod højre */
 }
 
 .cancelled-label {
