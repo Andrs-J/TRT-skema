@@ -1,92 +1,82 @@
-/* style.css - fix til design med klokkeslæt og afsluttet tekst */
+/* style.css - med sted og tilmelding korrekt stillet og farvet */
 :root{
   --bg: #041021;
   --accent: #ffd166;
+  --success: #28a745; /* grøn farve for "Ja" */
+  --danger: #ff6b6b;  /* rød farve for "Nej" */
   --muted: #9fb3c8;
-  --card: #093045;
-
-  /* Header & aktivitetslayout */
-  --header-height: 72px;
+  --card-bg-top: rgba(25,35,80,1);
+  --card-bg-bottom: rgba(10,20,50,1);
   --day-header-spacing: 24px;
-  --day-header-font-size: 24px;
-  --fs-header-size: 28px; /* Font size for titel og klokkeslæt */
 }
 
 body{
-  margin:0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
   background: var(--bg);
-  color:#f7fbff;
-  min-height:100vh;
+  color: #f7fbff;
+  min-height: 100vh;
 }
 
-/* === Fixed Header === */
+/* === Sticky Header === */
 .sticky-header{
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: var(--header-height);
-  background: rgba(0, 0, 0, 0.85);
+  height: 72px;
+  background: linear-gradient(180deg, rgba(30,30,60,0.9), rgba(15,15,30,0.95));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 16px;
   z-index: 1000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
-.sticky-header h1{
-  margin: 0;
-  font-size: var(--fs-header-size);
-  font-weight: 900;
-  letter-spacing: 0.8px;
-}
-.sticky-header .clock{
-  font-size: var(--fs-header-size);
-  font-weight: 800;
-  color: var(--accent);
-  margin-left: 18px; /* Flytter klokkeslæt lidt ind */
-}
+.sticky-header h1{ font-size: 26px; font-weight: 900; color: var(--accent); }
+.sticky-header .clock{ font-size: 22px; font-weight: 700; color: var(--accent); }
 
-/* === Aktivitetscontainer === */
+/* === Aktiviteter === */
 .activities-container{
-  padding-top: calc(var(--header-height) + 24px);
+  padding-top: 96px;
+  margin: 0 auto;
+  max-width: 95%;
   display: flex;
   flex-direction: column;
   gap: var(--day-header-spacing);
 }
 
-/* Dagoverskrift mellem aktiviteter */
 .day-header{
-  font-size: var(--day-header-font-size);
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--accent);
   text-align: center;
-  margin: 0;
 }
 
-/* Aktivitet styles */
 .activity-row{
-  padding: 14px;
-  background: var(--card);
+  padding: 16px;
+  background: linear-gradient(180deg, var(--card-bg-top), var(--card-bg-bottom));
   border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: transform 0.2s ease;
 }
-.activity-title{
-  font-size: 20px;
+
+.activity-title{ font-size: 20px; font-weight: bold; }
+.activity-time{ font-size: 16px; color: var(--muted); }
+.activity-place{ font-size: 14px; color: var(--muted); }
+.activity-signup{
+  font-size: 16px;
+  color: var(--danger); /* default farve: rød for "Nej" */
   font-weight: bold;
 }
-.activity-time{
-  font-size: 16px;
-  color: var(--muted);
-}
+.activity-signup.ja{ color: var(--success); } /* grøn for "Ja" */
+
 .activity-row.past{
   background: rgba(90, 90, 90, 0.3);
   opacity: 0.65;
-  position: relative;
 }
 .activity-row.past::after{
   content: "Afsluttet";
@@ -97,10 +87,4 @@ body{
   font-size: 18px;
   color: var(--accent);
   font-weight: 700;
-  opacity: 0.9;
-}
-@media(max-width:600px){
-  .sticky-header h1{ font-size: 20px; }
-  .sticky-header .clock{ font-size: 18px; }
-  .day-header{ font-size: 20px; }
 }
