@@ -265,6 +265,31 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
   .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
 }
 
+/* Dynamisk status for aktivitet */
+.status {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: right;
+  color: var(--muted); /* Neutral farve som standard */
+}
+
+/* Tilpassede farver for hver status */
+.status.Afsluttet {
+  color: #ff6b6b; /* Rød for Afsluttet */
+}
+
+.status.Igang {
+  color: #28a745; /* Grøn for Igang */
+}
+
+.status.Starter-snart {
+  color: #ffd166; /* Gul for Starter snart */
+}
+
+.status.Afventer {
+  color: var(--muted); /* Neutral farve for Afventer */
+}
+
 /* HURTIG GUIDE:
    - For at ændre titel/dato/ur-størrelse: rediger --fs-header-size i :root.
    - Hvis tilmeldingslinjen stadig bryder: øg --meta-col-width eller reducer --fs-signup.
