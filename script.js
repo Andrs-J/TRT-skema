@@ -141,3 +141,21 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchActivities();
   startClock();
 });
+
+async function fetchActivities() {
+  const url = `${urlBase}?_=${Date.now()}`;
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: Fejl ved hent`);
+    
+    const data = await res.json();
+    console.log("Hentet data:", data); // Debug: se rå data der hentes
+    renderActivities(data);
+    
+    const lastUpdated = $("lastUpdated");
+    if (lastUpdated) lastUpdated.textContent = new Date().toLocaleString("da-DK");
+  } catch (err) {
+    console.error("Fetch-fejl:", err);
+    alert(`Kunne ikke hente aktiviteter fra Google Sheet:\n${err.message}`);
+  }
+}
