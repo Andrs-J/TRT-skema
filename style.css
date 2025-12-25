@@ -4,18 +4,16 @@
   --accent: #ffd166;
   --muted: #9fb3c8;
   --card: #093045;
-  --cancelled: #ff6b6b; /* Farve for Aflyst */
-  --signup-yes: #ff6b6b; /* Farve for Ja */
-  --signup-no: #28a745; /* Farve for Nej */
-  --finished: #9fb3c8; /* Farve for Afsluttet */
+  --cancelled: #ff6b6b;
 
-  /* Række typografi */
+  /* Font-størrelser og layout */
+  --fs-header-size: 64px;
   --fs-row-time: 44px;
   --fs-row-title: 44px;
   --fs-row-place: 26px;
   --fs-signup: 30px;
+  --fs-cancelled-label: 40px;
   --gutter-side: 12px;
-  --row-gap: 20px; /* Afstand mellem rækker */
 }
 
 body {
@@ -28,89 +26,84 @@ body {
   flex-direction: column;
 }
 
+header {
+  display: flex;
+  align-items: center;
+  padding: 18px var(--gutter-side);
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  gap: 12px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: var(--fs-header-size);
+  font-weight: 900;
+}
+
+.current-date {
+  flex: 1;
+  text-align: center;
+  font-size: var(--fs-header-size);
+  font-weight: 700;
+  color: var(--accent);
+}
+
 main {
   flex: 1;
   padding: 20px var(--gutter-side);
   display: flex;
   flex-direction: column;
-  gap: var(--row-gap);
+  gap: 18px;
 }
 
 .activities-list {
   width: calc(100% - (var(--gutter-side) * 2));
   display: flex;
   flex-direction: column;
-  gap: var(--row-gap);
+  gap: 24px;
   margin: 0 auto;
-}
-
-.day-section {
-  margin-top: 20px;
-  padding: 10px 0;
-  border-top: 2px solid var(--accent);
-}
-
-.day-section .day-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  text-transform: capitalize;
 }
 
 .activity-row {
   background: var(--card);
   border-radius: 8px;
   padding: 14px 18px;
-  color: white;
+  color: #fff;
   display: flex;
   align-items: center;
   gap: 20px;
-  opacity: 1; /* Initial synlighed */
-  transition: opacity 0.3s ease, filter 0.3s ease; /* Effekt */
+  min-height: 96px;
+  transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-.activity-row.cancelled,
-.activity-row.finished {
-  opacity: 0.6; /* Fade out */
-  filter: grayscale(50%);
+.activity-row.cancelled {
+  opacity: 0.65;
+  filter: grayscale(35%);
 }
 
-.time {
+.activity-row .time {
   font-size: var(--fs-row-time);
   font-weight: 800;
   color: var(--accent);
-  white-space: nowrap;
 }
 
-.title {
+.activity-row .title {
   font-size: var(--fs-row-title);
   font-weight: 900;
 }
 
-.place {
+.activity-row .place {
   font-size: var(--fs-row-place);
   color: var(--muted);
 }
 
-.status {
+.activity-row .signup {
   font-size: var(--fs-signup);
+}
+
+.cancelled-label {
+  font-size: var(--fs-cancelled-label);
   font-weight: bold;
-  text-align: right;
-  margin-left: auto; /* Skub status til højre */
-}
-
-.status-yes {
-  color: var(--signup-yes); /* Rød for Ja */
-}
-
-.status-no {
-  color: var(--signup-no); /* Grøn for Nej */
-}
-
-.status-cancelled {
-  color: var(--cancelled); /* Farve for Aflyst */
-}
-
-.status-finished {
-  color: var(--finished); /* Farve for Afsluttet */
+  color: var(--cancelled);
 }
