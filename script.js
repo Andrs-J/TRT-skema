@@ -162,10 +162,9 @@ function renderActivities(dataByDay) {
     updateAllCountdowns();
 }
 
-  function createRow(item, isPastInitial) {
+  function createRow(item) {
     const row = document.createElement("div");
     row.className = "activity-row";
-    if (isPastInitial) row.classList.add("past");
 
     const timeDiv = document.createElement("div");
     timeDiv.className = "time";
@@ -189,20 +188,20 @@ function renderActivities(dataByDay) {
     tp.appendChild(normalInfo);
     row.appendChild(tp);
 
-    // Dynamisk status baseret på klokkeslæt
+    // Dynamisk status
     const meta = document.createElement("div");
     meta.className = "meta";
     const nowMs = Date.now();
 
     let status = "";
     if (nowMs >= item.end.getTime()) {
-      status = "Afsluttet";
-    } else if (nowMs >= item.start.getTime() && nowMs < item.end.getTime()) {
-      status = "Igang";
+        status = "Afsluttet";
+    } else if (nowMs >= item.start.getTime()) {
+        status = "Igang";
     } else if (item.start.getTime() - nowMs <= 30 * 60 * 1000) {
-      status = "Starter snart";
+        status = "Starter snart";
     } else {
-      status = "Kommende";
+        status = "Afventer";
     }
 
     const statusDiv = document.createElement("div");
@@ -213,7 +212,7 @@ function renderActivities(dataByDay) {
     row.appendChild(meta);
 
     return row;
-  }
+}
 
   upcoming.forEach(item => {
     const row = createRow(item, false);
