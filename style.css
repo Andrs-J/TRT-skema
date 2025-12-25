@@ -16,6 +16,7 @@
   --fs-signup: 30px;
   --fs-cancelled-label: 40px;
   --gutter-side: 12px;
+  --row-gap: 36px; /* Rækkeafstand */
 }
 
 body {
@@ -63,7 +64,7 @@ main {
   width: calc(100% - (var(--gutter-side) * 2));
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--row-gap); /* Brug row-gap */
   margin: 0 auto;
 }
 
@@ -73,8 +74,8 @@ main {
   padding: 14px 18px;
   color: white;
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .time {
@@ -99,11 +100,11 @@ main {
 }
 
 .signup-yes {
-  color: var(--signup-yes); /* Rød farve for JA */
+  color: var(--signup-yes);
 }
 
 .signup-no {
-  color: var(--signup-no); /* Grøn farve for NEJ */
+  color: var(--signup-no);
 }
 
 .cancelled {
