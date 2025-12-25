@@ -1,63 +1,39 @@
-:root {
-  /* Farver */
-  --bg: #041021;
-  --accent: #ffd166;
-  --muted: #9fb3c8;
-  --card: #093045;
-  --cancelled: #ff6b6b;
+// script.js - Opdater dag og dato i formatet "Torsdag - 25. december 2025"
 
-  /* Font-størrelser og layout */
-  --fs-header-size: 64px;
-  --fs-row-time: 44px;
-  --fs-row-title: 44px;
-  --fs-row-place: 26px;
-  --fs-signup: 30px;
-  --fs-cancelled-label: 40px;
-  --gutter-side: 12px;
+const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
+const SHEET_NAME = "Uge 1";
+const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+
+const $ = (id) => document.getElementById(id);
+const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
+const now = () => new Date();
+
+// Opdater dato
+function updateDate() {
+  const d = new Date();
+  const formatted = d.toLocaleDateString("da-DK", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  // Formatet "Torsdag - 25. december 2025"
+  const finalFormatted = formatted
+    .replace(" ", " - ")
+    .replace(". ", " "); // Tilføj "-" og fjern unødig punktum
+
+  const el = $("currentDate");
+  if (el) el.textContent = finalFormatted;
 }
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  background: linear-gradient(180deg, #031523 0%, var(--bg) 100%);
-  color: #f7fbff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+// Opdater ur
+function updateClock() {
+  const el = $("clock");
+  if (el) el.textContent = formatTime(new Date());
 }
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Dato til venstre, ur til højre */
-  padding: 18px var(--gutter-side);
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  gap: 8px;
-}
-
-.current-date {
-  font-size: 1.5rem; /* Justér størrelsen */
-  font-weight: 500;
-  color: var(--accent);
-}
-
-.clock {
-  font-size: 1.3rem;
-  color: var(--accent);
-}
-
-main {
-  flex: 1;
-  padding: 20px var(--gutter-side);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-footer {
-  padding: 10px var(--gutter-side);
-  font-size: 12px;
-  text-align: center;
-  color: var(--muted);
-}
+// STARTUP: Initier opdatering af dato og ur
+updateDate();
+updateClock();
+setInterval(updateClock, 1000); // Opdater uret hvert sekund
