@@ -267,7 +267,7 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
 
 /* Dynamisk status for aktivitet */
 .status {
-  font-size: 1.9rem;
+  font-size: 2.5rem;
   font-weight: bold;
   text-align: right;
   color: var(--muted); /* Neutral farve som standard */
