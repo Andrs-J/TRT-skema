@@ -1,5 +1,6 @@
 // script.js - komplet fil (ingen Opdater/Fuldskærm-knapper)
-// Opdateret updateDate() så dato vises som "Onsdag 24. december 2025" (uden "den")
+// Opdateret updateDate() så dato vises som "Onsdag 24. december 2025"
+// -- med et mellemrum mellem ugedag og dag, og måneden i lille bogstav.
 
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
@@ -51,27 +52,27 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag+dato i header — uden "den", fx "Onsdag 24. december 2025"
+// Opdater dag+dato i header — format: "Onsdag 24. december 2025"
 function updateDate() {
   const d = new Date();
 
-  // Brug formatToParts så vi kan fjerne litteraler som "den"
-  const parts = new Intl.DateTimeFormat("da-DK", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).formatToParts(d);
+  // Hent ugedag og måned via locale for korrekt sprog
+  let weekday = d.toLocaleDateString("da-DK", { weekday: "long" });
+  let month = d.toLocaleDateString("da-DK", { month: "long" });
 
-  // Fjern parts hvor value er "den" (trimmet, case-insensitivt)
-  const filtered = parts.filter(p => !(p.type === "literal" && p.value.trim().toLowerCase() === "den"));
+  // Sikr konsistente formater:
+  weekday = String(weekday || "").trim();
+  month = String(month || "").trim().toLowerCase(); // måned i lille bogstav
 
-  // Sæt delene sammen til en streng, ryd evt. dobbelte mellemrum og trim
-  let text = filtered.map(p => p.value).join("");
-  text = text.replace(/\s{2,}/g, " ").trim();
+  // Dag og år
+  const day = d.getDate();
+  const year = d.getFullYear();
 
-  // Capitalize første bogstav
-  const out = text.charAt(0).toUpperCase() + text.slice(1);
+  // Capitalize første bogstav i ugedag
+  const weekdayCap = weekday ? (weekday.charAt(0).toUpperCase() + weekday.slice(1)) : "";
+
+  // Sammensæt med mellemrum mellem ugedag og dag
+  const out = `${weekdayCap} ${day} ${month} ${year}`.replace(/\s{2,}/g, " ").trim();
 
   const el = $("currentDate");
   if (el) el.textContent = out;
