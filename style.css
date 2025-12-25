@@ -290,6 +290,21 @@ footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; bor
   color: var(--muted); /* Neutral farve for Afventer */
 }
 
+/* Sektioner for hver dag */
+.day-section {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 2px solid var(--accent); /* Adskille dagene med linje */
+}
+
+.day-header {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--accent);
+  text-transform: capitalize;
+  margin-bottom: 12px;
+}
+
 /* HURTIG GUIDE:
    - For at ændre titel/dato/ur-størrelse: rediger --fs-header-size i :root.
    - Hvis tilmeldingslinjen stadig bryder: øg --meta-col-width eller reducer --fs-signup.
