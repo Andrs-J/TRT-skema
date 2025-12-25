@@ -47,32 +47,30 @@ body{
 }
 
 /* === HEADER: left | center(date) | right(meta) === */
-header{
-  display:flex;
-  align-items:center;
-  padding:18px var(--gutter-side);
-  background:rgba(255,255,255,0.02);
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  gap:12px;
+header {
+  display: flex;
+  align-items: center;
+  padding: 18px var(--gutter-side);
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  gap: 12px;
 }
 
-/* Brand (venstre) */
-.brand{ flex: 0 0 auto; }
-.brand h1{
-  margin:0;
-  font-size:var(--fs-header-size);
-  font-weight:900;
-  letter-spacing:0.4px;
+/* Dag + dato (til venstre) */
+.current-date {
+  flex: 1;
+  text-align: left; /* Venstrestil dag og dato */
+  font-size: 1.8rem; /* Størrelse */
+  font-weight: 600;
+  color: var(--accent); /* Fremhæv med accent-farve */
+  padding-left: var(--gutter-side); /* Giv lidt afstand fra kant */
 }
 
-/* Dag + dato (midt) */
-.current-date{
-  flex:1 1 auto;
-  text-align:center;
-  font-size:var(--fs-header-size);
-  font-weight:700;
-  color:#ffffff;
-  text-transform: capitalize;
+.meta {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 18px;
+  align-items: center;
 }
 
 /* Højre: ur + knapper (knapper fjernet) */
