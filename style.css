@@ -1,89 +1,275 @@
-:root {
+/* style.css - komplet replacement med neutral "Tilmelding:" og farvet status (JA/NEJ)
+   --------------------------------------------------------
+   Ændr størrelsen for titel/dato/ur via --fs-header-size i :root.
+*/
+
+:root{
   /* Farver */
   --bg: #041021;
   --accent: #ffd166;
   --muted: #9fb3c8;
   --card: #093045;
-  --cancelled: #ff6b6b;
 
-  /* Font-størrelser og layout */
-  --fs-header-size: 64px;
+  /* Status-farver */
+  --success: #28a745;   /* grøn for NEJ */
+  --danger:  #ff6b6b;   /* rød for JA */
+
+  /* Side/gutter */
+  --gutter-side: 12px;
+
+  /* HEADER: samme størrelse for titel, dato og ur - justér her */
+  --fs-header-size: 64px;    /* Ændr denne hvis du vil have alt større/mindre */
+
+  /* Rækker / layout */
+  --row-gap: 18px;
+  --time-col-width: 320px;
+  --meta-col-width: 300px;
+
+  /* Række-typografi (til læsbarhed på afstand) */
   --fs-row-time: 44px;
   --fs-row-title: 44px;
   --fs-row-place: 26px;
   --fs-signup: 30px;
-  --fs-cancelled-label: 40px;
-  --gutter-side: 12px;
+  --fs-past-label: 40px;
 }
 
-body {
-  margin: 0;
+/* === GENERELT === */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background: linear-gradient(180deg, #031523 0%, var(--bg) 100%);
-  color: #f7fbff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  color:#f7fbff;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
 }
 
-header {
-  display: flex;
-  flex-direction: column; /* Tillader datoen at stå under titlen */
-  align-items: center;
-  padding: 18px var(--gutter-side);
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  gap: 8px;
+/* === HEADER: left | center(date) | right(meta) === */
+header{
+  display:flex;
+  align-items:center;
+  padding:18px var(--gutter-side);
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  gap:12px;
 }
 
-.brand h1 {
-  margin: 0;
-  font-size: var(--fs-header-size);
-  font-weight: 900;
+/* Brand (venstre) */
+.brand{ flex: 0 0 auto; }
+.brand h1{
+  margin:0;
+  font-size:var(--fs-header-size);
+  font-weight:900;
+  letter-spacing:0.4px;
 }
 
-.day-date {
-  margin: 0;
-  font-size: 1.3rem; /* Formatering af dag + dato */
-  font-weight: 500;
-  color: var(--muted); /* Pæn afdæmpet farve til dato */
+/* Dag + dato (midt) */
+.current-date{
+  flex:1 1 auto;
+  text-align:center;
+  font-size:var(--fs-header-size);
+  font-weight:700;
+  color:#ffffff;
+  text-transform: capitalize;
 }
 
-.clock {
-  font-size: 1.6rem;
-  color: var(--accent);
+/* Højre: ur + knapper (knapper fjernet) */
+.meta{
+  flex:0 0 auto;
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+.clock{
+  font-size:var(--fs-header-size);
+  font-weight:800;
+  color:var(--accent);
+  line-height:1;
+  padding-right:8px;
 }
 
-main {
-  flex: 1;
-  padding: 20px var(--gutter-side);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+/* === MAIN / AKTIVITETER === */
+main{
+  flex:1;
+  padding:20px var(--gutter-side);
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  align-items:stretch;
 }
 
-.activities-list {
+.activities-list{
   width: calc(100% - (var(--gutter-side) * 2));
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:var(--row-gap);
+  margin:0 auto;
 }
 
-.activity-row {
-  background: var(--card);
-  border-radius: 8px;
-  padding: 14px 18px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  min-height: 96px;
+/* HVER RÆKKE */
+.activity-row{
+  background:var(--card);
+  border-radius:8px;
+  padding:14px 18px;
+  color:#f3fbff;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.38);
+  display:flex;
+  align-items:center;
+  gap:20px;
+  min-height:96px;
+  transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-footer {
-  padding: 10px var(--gutter-side);
-  font-size: 12px;
-  text-align: center;
+/* VENSTRE: Tid */
+.activity-row .time{
+  width: var(--time-col-width);
+  min-width:160px;
+  font-size:var(--fs-row-time);
+  font-weight:800;
+  color:var(--accent);
+  letter-spacing:0.6px;
+}
+
+/* MIDTEN: titel + sted */
+.activity-row .title-place{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  position:relative;
+}
+.activity-row .normal-info{
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.activity-row .title{
+  font-size:var(--fs-row-title);
+  font-weight:900;
+  line-height:1.02;
+}
+.activity-row .place{
+  font-size:var(--fs-row-place);
+  color:var(--muted);
+  opacity:0.95;
+}
+
+/* PAST-CENTER (stor label) */
+.activity-row .past-center{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+  text-align:center;
+  font-size:var(--fs-past-label);
+  font-weight:900;
+  color:#ffffff;
+  z-index:2;
+  pointer-events:none;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.6);
+  opacity:0.95;
+}
+
+/* HØJRE: meta (tilmelding + countdown) */
+.activity-row .meta{
+  width: var(--meta-col-width);
+  min-width:140px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+  text-align:right;
+}
+
+/* TILMELDING: label neutral + status farvet; forhindre wrap */
+.activity-row .meta .signup{
+  font-size:var(--fs-signup);
+  font-weight:900;
+  white-space:nowrap;      /* forhindrer "JA (Ring)" i at blive delt på to linjer */
+  display:inline-block;
+  overflow:visible;
+}
+
+/* Label (f.eks. "Tilmelding:") - neutral farve */
+.activity-row .meta .signup .signup-label{
   color: var(--muted);
+  margin-right:6px;
+  font-weight:700;
 }
+
+/* Status (JA/NEJ) - farvet */
+.activity-row .meta .signup .signup-status.ja{ color: var(--danger); }
+.activity-row .meta .signup .signup-status.nej{ color: var(--success); }
+
+/* Countdown */
+.activity-row .meta .countdown{ font-size:16px; color:var(--muted); }
+
+/* PAST (afdæmp, men behold indhold synligt) */
+.activity-row.past{
+  opacity: 0.65;
+  filter: grayscale(35%);
+}
+.activity-row.past .normal-info{ opacity:0.75; }
+.activity-row.past .meta{ opacity:0.65; }
+.activity-row.past .past-center{ display:block; }
+
+/* MARKÉR NUVÆRENDE */
+.activity-row.current{
+  outline: 3px solid rgba(255,209,102,0.12);
+  transform: translateY(-2px);
+}
+
+/* BESKED & FOOTER */
+.message{ color:var(--muted); font-size:16px; text-align:center; }
+footer{ padding:12px var(--gutter-side); color:var(--muted); font-size:14px; border-top:1px solid rgba(255,255,255,0.02); }
+
+/* === RESPONSIVE SKALERING === */
+@media (max-width:1400px){
+  :root{
+    --fs-header-size: 56px;
+    --time-col-width: 280px;
+    --meta-col-width: 260px;
+    --fs-row-time: 36px;
+    --fs-row-title: 36px;
+    --fs-row-place: 22px;
+    --fs-signup: 22px;
+    --fs-past-label: 32px;
+  }
+}
+@media (max-width:1200px){
+  :root{
+    --fs-header-size: 48px;
+    --time-col-width: 260px;
+    --meta-col-width: 220px;
+    --fs-row-time: 32px;
+    --fs-row-title: 32px;
+    --fs-row-place: 20px;
+    --fs-signup: 20px;
+    --fs-past-label: 28px;
+  }
+}
+@media (max-width:900px){
+  :root{
+    --fs-header-size: 28px;
+    --time-col-width: 120px;
+    --meta-col-width: 140px;
+    --fs-row-time: 18px;
+    --fs-row-title: 20px;
+    --fs-row-place: 14px;
+    --fs-signup: 14px;
+    --fs-past-label: 18px;
+    --gutter-side: 10px;
+  }
+  .activity-row{ padding:10px; min-height:64px; gap:12px; }
+  .activity-row .time{ width:var(--time-col-width); font-size:var(--fs-row-time); }
+}
+
+/* HURTIG GUIDE:
+   - For at ændre titel/dato/ur-størrelse: rediger --fs-header-size i :root.
+   - Hvis tilmeldingslinjen stadig bryder: øg --meta-col-width eller reducer --fs-signup.
+*/
