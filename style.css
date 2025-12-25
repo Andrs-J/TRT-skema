@@ -4,6 +4,9 @@
   --accent: #ffd166;
   --muted: #9fb3c8;
   --card: #093045;
+  --cancelled: #ff6b6b; /* Aflyst farve */
+  --signup-yes: #ff6b6b; /* Rød for JA */
+  --signup-no: #28a745; /* Grøn for NEJ */
 
   /* Typografi */
   --fs-header-size: 64px;
@@ -11,6 +14,7 @@
   --fs-row-title: 44px;
   --fs-row-place: 26px;
   --fs-signup: 30px;
+  --fs-cancelled-label: 40px;
   --gutter-side: 12px;
 }
 
@@ -89,14 +93,21 @@ main {
   color: var(--muted);
 }
 
-.signup, .cancelled {
+.signup {
   font-size: var(--fs-signup);
   font-weight: bold;
-  display: inline-flex;
-  align-items: center;
 }
 
-.checkbox {
-  margin-left: 6px;
-  color: var(--muted);
+.signup-yes {
+  color: var(--signup-yes); /* Rød farve for JA */
+}
+
+.signup-no {
+  color: var(--signup-no); /* Grøn farve for NEJ */
+}
+
+.cancelled {
+  font-size: var(--fs-cancelled-label);
+  font-weight: bold;
+  color: var(--cancelled);
 }
