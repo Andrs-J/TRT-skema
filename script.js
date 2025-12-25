@@ -1,6 +1,6 @@
 // script.js - Komplet kode til Google Sheets dataintegration og fejlhåndtering
-const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
-const SHEET_NAME = "Sheet1";
+const SHEET_ID = "1ScIrsWb_ML0zTgG6zM2Y-CEQVOcEE1DCuMLdwtlQJ-4";
+const SHEET_NAME = "Ark1";
 const urlBase = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
