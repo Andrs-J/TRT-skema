@@ -1,7 +1,7 @@
-// script.js - Opdateret så "Tilmelding:" vises som "Ja" eller "Nej" baseret på true/false værdien fra Google Sheets.
+// script.js - Opdateret så "Tilmelding:" vises som "Ja" eller "Nej" baseret på TRUE/FALSE fra Google Sheets.
 
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
-const SHEET_NAME = "Sheet1";
+const SHEET_NAME = "Uge 1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
@@ -50,7 +50,7 @@ function triggerHardReload() {
   window.location.replace(urlObj.toString());
 }
 
-// Opdater dag + dato i header
+// Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
   const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -59,7 +59,7 @@ function updateDate() {
   if (el) el.textContent = text;
 }
 
-// Hent + process data
+// HENT + PROCESS DATA
 async function fetchActivities() {
   setStatus("Henter aktiviteter…");
   showMessage("");
@@ -91,22 +91,23 @@ async function fetchActivities() {
 function processData(rows) {
   const today = new Date();
   const processed = [];
-
   rows.forEach(r => {
     const startParsed = parseHM(r.Tid);
     const endParsed = parseHM(r.Slut);
     if (!startParsed || !endParsed) return;
-
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
     if (end < start) end.setDate(end.getDate() + 1);
 
-    // Konverter tilmelding baseret på true/false
+    // Konverter "TRUE"/"FALSE" (strings) til booleans true/false
     let tilmeldingStatus = "";
-    if (r.Tilmelding === true) {
-      tilmeldingStatus = "ja"; // True i Google Sheets bliver "Ja"
-    } else if (r.Tilmelding === false) {
-      tilmeldingStatus = "nej"; // False i Google Sheets bliver "Nej"
+    if (r.Tilmelding === "TRUE") {
+      tilmeldingStatus = "ja"; // TRUE som string bliver "Ja"
+    } else if (r.Tilmelding === "FALSE") {
+      tilmeldingStatus = "nej"; // FALSE som string bliver "Nej"
+    } else {
+      tilmeldingStatus = "ukendt"; // Fallback for ukendte værdier
+      console.warn(`Ukendt værdi for Tilmelding: ${r.Tilmelding}`);
     }
 
     processed.push({
@@ -115,17 +116,17 @@ function processData(rows) {
       end,
       aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
       sted: (r.Sted || "").replace(/"/g, "").trim(),
-      tilmelding: tilmeldingStatus // Brug den konverterede status
+      tilmelding: tilmeldingStatus
     });
   });
-
   const nowTime = now();
-  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0));
+  const all = processed.filter(
+    (p) => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1, 0, 0)
+  );
   all.sort((a, b) => a.start - b.start);
   return all;
 }
 
-// Render / vis rækker
 function renderActivities(list) {
   const container = $("activities");
   if (!container) return;
@@ -190,7 +191,8 @@ function renderActivities(list) {
       statusSpan.textContent = " Nej";
       statusSpan.classList.add("nej");
     } else {
-      statusSpan.textContent = ""; // Ingen tekst hvis værdi ikke eksisterer
+      statusSpan.textContent = " Ukendt";
+      statusSpan.classList.add("ukendt");
     }
 
     signup.appendChild(labelSpan);
@@ -215,8 +217,6 @@ function renderActivities(list) {
 
   updateAllCountdowns();
 }
-
-function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
 
 function updateAllCountdowns() {
   const els = document.querySelectorAll(".activity-row .countdown");
@@ -269,14 +269,16 @@ function formatDelta(ms) {
   return `${mins} min`;
 }
 
+function clearActivities() { if ($("activities")) $("activities").innerHTML = ""; }
+
 function startClock() {
   setInterval(() => { if ($("clock")) $("clock").innerText = formatTime(new Date()); }, 1000);
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
-// STARTUP: initialiser dato, ur, data og polls
+// STARTUP: initialiser date, clock, data og polls
 updateDate();
-setInterval(updateDate, 60 * 1000);
+setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
