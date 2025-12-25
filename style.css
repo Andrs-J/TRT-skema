@@ -4,19 +4,18 @@
   --accent: #ffd166;
   --muted: #9fb3c8;
   --card: #093045;
-  --cancelled: #ff6b6b; /* Aflyst farve */
-  --signup-yes: #ff6b6b; /* Rød for JA */
-  --signup-no: #28a745; /* Grøn for NEJ */
+  --cancelled: #ff6b6b;
+  --status-yes: #ff6b6b; /* Rød for Ja */
+  --status-no: #28a745; /* Grøn for Nej */
+  --status-finished: #9fb3c8; /* Grå for Afsluttet */
 
   /* Typografi */
   --fs-header-size: 64px;
   --fs-row-time: 44px;
   --fs-row-title: 44px;
-  --fs-row-place: 26px;
-  --fs-signup: 30px;
-  --fs-cancelled-label: 40px;
-  --gutter-side: 12px;
-  --row-gap: 36px; /* Rækkeafstand */
+  --fs-row-place: 28px;
+  --fs-status: 30px;
+  --row-gap: 20px;
 }
 
 body {
@@ -57,31 +56,43 @@ main {
   padding: 20px var(--gutter-side);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--row-gap);
 }
 
 .activities-list {
   width: calc(100% - (var(--gutter-side) * 2));
   display: flex;
   flex-direction: column;
-  gap: var(--row-gap); /* Brug row-gap */
+  gap: var(--row-gap);
   margin: 0 auto;
+}
+
+.day-section {
+  border-top: 2px solid var(--accent);
+  padding-top: 12px;
 }
 
 .activity-row {
   background: var(--card);
   border-radius: 8px;
-  padding: 14px 18px;
-  color: white;
+  padding: 12px 16px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 20px;
 }
 
 .time {
+  min-width: 160px;
   font-size: var(--fs-row-time);
-  font-weight: 800;
+  font-weight: bold;
   color: var(--accent);
+}
+
+.activity-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
@@ -94,21 +105,25 @@ main {
   color: var(--muted);
 }
 
-.signup {
-  font-size: var(--fs-signup);
+.status {
+  font-size: var(--fs-status);
   font-weight: bold;
+  text-align: center;
+  min-width: 140px;
 }
 
-.signup-yes {
-  color: var(--signup-yes);
-}
-
-.signup-no {
-  color: var(--signup-no);
-}
-
-.cancelled {
-  font-size: var(--fs-cancelled-label);
-  font-weight: bold;
+.status-cancelled {
   color: var(--cancelled);
+}
+
+.status-finished {
+  color: var(--status-finished);
+}
+
+.status-yes {
+  color: var(--status-yes);
+}
+
+.status-no {
+  color: var(--status-no);
 }
