@@ -5,29 +5,13 @@
   --muted: #9fb3c8;
   --card: #093045;
 
-  /* Status-farver */
-  --success: #28a745; /* grøn for NEJ */
-  --danger: #ff6b6b;  /* rød for JA */
-  --cancelled: #ff6b6b;  /* farve for aflyst */
-
-  /* Side/gutter */
-  --gutter-side: 12px;
-
-  /* HEADER: samme størrelse for titel, dato og ur - justér her */
+  /* Typografi */
   --fs-header-size: 64px;
-
-  /* Rækker / layout */
-  --row-gap: 18px;
-  --time-col-width: 320px;
-  --meta-col-width: 300px;
-
-  /* Række-typografi (til læsbarhed på afstand) */
   --fs-row-time: 44px;
   --fs-row-title: 44px;
   --fs-row-place: 26px;
   --fs-signup: 30px;
-  --fs-past-label: 40px;
-  --fs-cancelled-label: 40px; /* Størrelse for aflyst label */
+  --gutter-side: 12px;
 }
 
 body {
@@ -49,15 +33,10 @@ header {
   gap: 12px;
 }
 
-.brand {
-  flex: 0 0 auto;
-}
-
 .brand h1 {
   margin: 0;
   font-size: var(--fs-header-size);
   font-weight: 900;
-  letter-spacing: 0.4px;
 }
 
 .current-date {
@@ -65,8 +44,7 @@ header {
   text-align: center;
   font-size: var(--fs-header-size);
   font-weight: 700;
-  color: #ffffff;
-  text-transform: capitalize;
+  color: var(--accent);
 }
 
 main {
@@ -81,7 +59,7 @@ main {
   width: calc(100% - (var(--gutter-side) * 2));
   display: flex;
   flex-direction: column;
-  gap: var(--row-gap);
+  gap: 20px;
   margin: 0 auto;
 }
 
@@ -89,157 +67,36 @@ main {
   background: var(--card);
   border-radius: 8px;
   padding: 14px 18px;
-  color: #f3fbff;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.38);
+  color: white;
   display: flex;
   align-items: center;
   gap: 20px;
-  min-height: 96px;
-  transition: opacity 300ms ease, transform 200ms ease, filter 300ms ease;
 }
 
-/* Venstre: Tid */
-.activity-row .time {
-  width: var(--time-col-width);
-  min-width: 160px;
+.time {
   font-size: var(--fs-row-time);
   font-weight: 800;
   color: var(--accent);
-  letter-spacing: 0.6px;
 }
 
-/* Midten: Titel + Sted */
-.activity-row .title-place {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-}
-
-.activity-row .normal-info {
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.activity-row .title {
+.title {
   font-size: var(--fs-row-title);
   font-weight: 900;
-  line-height: 1.02;
 }
 
-.activity-row .place {
+.place {
   font-size: var(--fs-row-place);
   color: var(--muted);
-  opacity: 0.95;
 }
 
-/* Past-Center (for afsluttet eller aflyst) */
-.activity-row .past-center,
-.activity-row .cancelled-center {
-  display: none;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  text-align: center;
-  font-size: var(--fs-past-label);
-  font-weight: 900;
-  color: var(--muted);
-  z-index: 2;
-  pointer-events: none;
-  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
-  opacity: 0.95;
-}
-
-.activity-row.cancelled .cancelled-center {
-  display: block;
-  font-size: var(--fs-cancelled-label);
-  color: var(--cancelled);
-}
-
-/* Aflyst Fade Effect */
-.activity-row.cancelled {
-  opacity: 0.65;
-  filter: grayscale(35%);
-}
-
-.activity-row.past {
-  opacity: 0.65;
-  filter: grayscale(35%);
-}
-
-.activity-row.past .normal-info {
-  opacity: 0.75;
-}
-
-.activity-row .meta {
-  width: var(--meta-col-width);
-  min-width: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  text-align: right;
-}
-
-.activity-row .meta .signup {
+.signup, .cancelled {
   font-size: var(--fs-signup);
-  font-weight: 900;
-  white-space: nowrap;
-  display: inline-block;
-  overflow: visible;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
 }
 
-.activity-row .meta .signup .signup-label {
+.checkbox {
+  margin-left: 6px;
   color: var(--muted);
-  margin-right: 6px;
-  font-weight: 700;
-}
-
-.activity-row .meta .signup .signup-status.ja {
-  color: var(--danger);
-}
-
-.activity-row .meta .signup .signup-status.nej {
-  color: var(--success);
-}
-
-footer {
-  padding: 12px var(--gutter-side);
-  color: var(--muted);
-  font-size: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-/* Responsiv Skæring */
-@media (max-width: 1200px) {
-  :root {
-    --fs-row-time: 36px;
-    --fs-row-title: 36px;
-    --fs-row-place: 22px;
-    --fs-signup: 22px;
-    --fs-past-label: 32px;
-    --fs-cancelled-label: 32px;
-  }
-}
-
-@media (max-width: 900px) {
-  :root {
-    --fs-row-time: 28px;
-    --fs-row-title: 28px;
-    --fs-row-place: 18px;
-    --fs-signup: 18px;
-    --fs-past-label: 24px;
-    --fs-cancelled-label: 24px;
-    --gutter-side: 8px;
-  }
-
-  .activity-row {
-    padding: 12px;
-    gap: 12px;
-  }
 }
