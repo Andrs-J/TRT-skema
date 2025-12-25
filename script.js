@@ -242,3 +242,39 @@ setInterval(fetchActivities, 60 * 1000);
 setInterval(updateAllCountdowns, 1000);
 pollForChanges();
 setInterval(pollForChanges, POLL_INTERVAL_MS);
+
+// Deklaration af funktionen til at tilføje sektionen
+document.addEventListener("DOMContentLoaded", () => {
+    // Funktion til at tilføje en dagsektion
+    function addDaySection(day, offset) {
+        // Find indholdet hvor dagene skal tilføjes
+        const container = document.getElementById("activities");
+        if (!container) return;
+
+        // Beregn datoen for den nye dag
+        const refDate = new Date();
+        refDate.setDate(refDate.getDate() + offset); // Offset angiver forskellen fra i dag
+        const formattedDate = refDate.toLocaleDateString("da-DK", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
+
+        // Opret sektionen for den pågældende dag
+        const daySection = document.createElement("div");
+        daySection.className = "day-section";
+
+        // Sæt headeren med dagens navn og dato
+        const dayHeader = document.createElement("h2");
+        dayHeader.className = "day-header";
+        dayHeader.textContent = `${day.charAt(0).toUpperCase()}${day.slice(1)} - ${formattedDate}`;
+        daySection.appendChild(dayHeader);
+
+        // Tilføj sektionen til DOM
+        container.appendChild(daySection);
+    }
+
+    // Tilføj bar for Tirsdag (dag 2) nedenunder Mandagens aktiviteter
+    addDaySection("Tirsdag", 1); // Offset = 1 for næste dag
+});
