@@ -1,5 +1,4 @@
-// script.js - opdateret så "Tilmelding:" forbliver neutral og kun status (JA/NEJ) farves.
-// Opdater/fuldskærm-knapper er fjernet.
+// script.js - Dynamisk status baseret på klokkeslæt: "Afsluttet", "Igang", "Starter snart" eller "Afventer".
 
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
 const SHEET_NAME = "Sheet1";
@@ -19,7 +18,7 @@ function parseHM(str) {
   const s = String(str).replace(/"/g, "").trim();
   const m = s.match(/(\d{1,2}):(\d{2})/);
   if (!m) return null;
-  const hh = parseInt(m[1],10), mm = parseInt(m[2],10);
+  const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
   if (isNaN(hh) || isNaN(mm)) return null;
   return { hh, mm };
 }
@@ -54,19 +53,10 @@ function triggerHardReload() {
 // Opdater dag+dato i header
 function updateDate() {
   const d = new Date();
-  
-  // Formatering af hver komponent
-  const weekday = d.toLocaleDateString("da-DK", { weekday: "long" });
-  const day = d.getDate();
-  const month = d.toLocaleDateString("da-DK", { month: "long" });
-  const year = d.getFullYear();
-
-  // Kombiner til ønsket format "Torsdag - 25 December 2025"
-  const formatted = `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} - ${day} ${month} ${year}`;
-
-  // Sæt den formaterede tekst i `currentDate` elementet
+  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const text = formatted.charAt(0).toUpperCase() + formatted.slice(1);
   const el = $("currentDate");
-  if (el) el.textContent = formatted;
+  if (el) el.textContent = text;
 }
 
 // HENT + PROCESS DATA
@@ -107,19 +97,18 @@ function processData(rows) {
     if (!startParsed || !endParsed) return;
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startParsed.hh, startParsed.mm);
     let end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endParsed.hh, endParsed.mm);
-    if (end < start) end.setDate(end.getDate()+1);
+    if (end < start) end.setDate(end.getDate() + 1);
     processed.push({
       raw: r,
       start,
       end,
-      aktivitet: (r.Aktivitet || "").replace(/"/g,"").trim(),
-      sted: (r.Sted || "").replace(/"/g,"").trim(),
-      tilmelding: (r.Tilmelding || "").toLowerCase().trim()
+      aktivitet: (r.Aktivitet || "").replace(/"/g, "").trim(),
+      sted: (r.Sted || "").replace(/"/g, "").trim(),
     });
   });
   const nowTime = now();
-  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate()-1,0,0));
-  all.sort((a,b) => a.start - b.start);
+  const all = processed.filter(p => p.end > new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() - 1, 0, 0));
+  all.sort((a, b) => a.start - b.start);
   return all;
 }
 
@@ -160,60 +149,37 @@ function renderActivities(list) {
     normalInfo.appendChild(title);
     normalInfo.appendChild(place);
 
-    const pastCenter = document.createElement("div");
-    pastCenter.className = "past-center";
-    pastCenter.textContent = "Afsluttet";
-
     tp.appendChild(normalInfo);
-    tp.appendChild(pastCenter);
     row.appendChild(tp);
 
+    // Dynamisk status baseret på klokkeslæt
     const meta = document.createElement("div");
     meta.className = "meta";
+    const nowMs = Date.now();
 
-    // Tilmelding: split i label + status. Label neutral, status farvet.
-    const signup = document.createElement("div");
-    signup.className = "signup";
-
-    const labelSpan = document.createElement("span");
-    labelSpan.className = "signup-label";
-    labelSpan.textContent = "Tilmelding:";
-
-    const statusSpan = document.createElement("span");
-    statusSpan.className = "signup-status";
-
-    const t = (item.tilmelding || "").trim();
-    if (t === "ja") {
-      statusSpan.textContent = " JA (Ring)";
-      statusSpan.classList.add("ja");
-    } else if (t === "nej" || t === "nej.") {
-      statusSpan.textContent = " NEJ";
-      statusSpan.classList.add("nej");
-    } else if (t) {
-      // ukendt tekst - vis pænt
-      statusSpan.textContent = " " + (t.charAt(0).toUpperCase() + t.slice(1));
+    let status = "";
+    if (nowMs >= item.end.getTime()) {
+      status = "Afsluttet";
+    } else if (nowMs >= item.start.getTime() && nowMs < item.end.getTime()) {
+      status = "Igang";
+    } else if (item.start.getTime() - nowMs <= 30 * 60 * 1000) {
+      status = "Starter snart";
     } else {
-      statusSpan.textContent = "";
+      status = "Afventer";
     }
 
-    signup.appendChild(labelSpan);
-    signup.appendChild(statusSpan);
-    meta.appendChild(signup);
+    const statusDiv = document.createElement("div");
+    statusDiv.className = "status";
+    statusDiv.textContent = status;
 
-    const countdown = document.createElement("div");
-    countdown.className = "countdown";
-    countdown.dataset.start = String(item.start.getTime());
-    countdown.dataset.end = String(item.end.getTime());
-    meta.appendChild(countdown);
-
+    meta.appendChild(statusDiv);
     row.appendChild(meta);
+
     return row;
   }
 
   upcoming.forEach(item => {
-    const isCurr = (item.start.getTime() <= nowTime.getTime() && item.end.getTime() >= nowTime.getTime());
     const row = createRow(item, false);
-    if (isCurr) row.classList.add("current");
     container.appendChild(row);
   });
 
@@ -234,33 +200,17 @@ function updateAllCountdowns() {
     if (isNaN(start) || isNaN(end)) { el.textContent = ""; return; }
 
     const row = el.closest(".activity-row");
-    const signupEl = row.querySelector(".meta .signup");
-    const normalInfo = row.querySelector(".normal-info");
-    const pastCenter = row.querySelector(".past-center");
-
     if (nowMs >= start && nowMs <= end) {
       const diff = end - nowMs;
       el.textContent = `Slutter om: ${formatDelta(diff)}`;
-      row.classList.remove("past");
       row.classList.add("current");
-      if (signupEl) signupEl.style.opacity = "";
-      if (normalInfo) normalInfo.style.opacity = "";
-      if (pastCenter) pastCenter.style.display = "none";
     } else if (nowMs < start) {
       const diff = start - nowMs;
       el.textContent = `Starter om: ${formatDelta(diff)}`;
-      row.classList.remove("past");
       row.classList.remove("current");
-      if (signupEl) signupEl.style.opacity = "";
-      if (normalInfo) normalInfo.style.opacity = "";
-      if (pastCenter) pastCenter.style.display = "none";
     } else {
       el.textContent = "";
-      row.classList.add("past");
       row.classList.remove("current");
-      if (signupEl) signupEl.style.opacity = "0.7";
-      if (normalInfo) normalInfo.style.opacity = "0.8";
-      if (pastCenter) pastCenter.style.display = "";
     }
   });
 }
@@ -283,9 +233,9 @@ function startClock() {
   if ($("clock")) $("clock").innerText = formatTime(new Date());
 }
 
-// STARTUP: initialiser date, clock, data og polls
+// STARTUP: Initialiser date, clock, data og polls
 updateDate();
-setInterval(updateDate, 60 * 1000); // opdaterer dato hvert minut (nok til midnat-change)
+setInterval(updateDate, 60 * 1000); // Opdaterer dato hvert minut (nok til midnat-change)
 fetchActivities();
 startClock();
 setInterval(fetchActivities, 60 * 1000);
