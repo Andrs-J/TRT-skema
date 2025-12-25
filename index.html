@@ -3,27 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TRT Aktiviteter</title>
+  <title>Aktiviteter – TRT (Udsigten)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <div class="brand">
-      <h1>TRT Aktiviteter</h1>
+      <h1>Dagens aktiviteter</h1>
     </div>
-    <div class="current-date" id="currentDate"></div>
+
+    <!-- Her vises dag + dato (midt i toppen) -->
+    <div id="currentDate" class="current-date" aria-live="polite"></div>
+
     <div class="meta">
-      <div class="clock" id="clock" aria-live="polite">--:--</div>
+      <div id="clock" aria-live="polite" class="clock">--:--</div>
+      <!-- Opdater og fuldskærm-knapper er fjernet -->
     </div>
   </header>
+
   <main>
-    <div id="activities" class="activities-list" aria-live="polite">
-      <!-- Dynamiske rækker indsættes her via script.js -->
-    </div>
+    <section class="hero" aria-labelledby="activities-title">
+      <div id="activities" class="activities-list" aria-live="polite">
+        <!-- JS indsætter rækker her -->
+      </div>
+
+      <div id="message" class="message" aria-live="polite"></div>
+    </section>
   </main>
+
   <footer>
     <small>Sidst opdateret: <span id="lastUpdated">–</span></small>
   </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
