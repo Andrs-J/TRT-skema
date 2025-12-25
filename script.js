@@ -1,4 +1,4 @@
-// script.js - fix til rendering med past-aktiviteter og klokkeslæt i topbar
+// script.js - render alle felter (tid, sted, aktivitet, tilmelding)
 const SHEET_ID = "1XChIeVNQqWM4OyZ6oe8bh2M9e6H14bMkm7cpVfXIUN8";
 const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
@@ -68,8 +68,19 @@ function renderActivities(days) {
       time.className = "activity-time";
       time.textContent = `${activity.Tid} - ${activity.Slut}`;
 
+      const place = document.createElement("div");
+      place.className = "activity-place";
+      place.textContent = `Sted: ${activity.Sted || "Ukendt"}`;
+
+      const signup = document.createElement("div");
+      signup.className = "activity-signup";
+      signup.textContent = `Tilmelding: ${activity.Tilmelding || "Nej"}`;
+      if ((activity.Tilmelding || "").toLowerCase() === "ja") signup.classList.add("ja");
+
       row.appendChild(title);
       row.appendChild(time);
+      row.appendChild(place);
+      row.appendChild(signup);
       dayRow.appendChild(row);
     });
 
