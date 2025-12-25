@@ -1,5 +1,5 @@
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
-const SHEET_NAME = "Sheet1";
+const SHEET_NAME = "Uge 1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
