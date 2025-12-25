@@ -59,7 +59,7 @@ header {
 .current-date {
   flex: 1;
   text-align: left; /* Hold dag og dato til venstre */
-  font-size: 3rem; /* Øg størrelsen for mere fremhævning */
+  font-size: 4rem; /* Øg størrelsen for mere fremhævning */
   font-weight: 700; /* Fremhæv teksten */
   color: var(--accent);
   padding-left: var(--gutter-side); /* Sørg for afstand til venstre */
