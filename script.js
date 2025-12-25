@@ -1,63 +1,48 @@
 const SHEET_ID = "1_k26vVuaX1vmKN6-cY3-33YAn0jVAsgIM7vLm0YrMyE";
-const SHEET_NAME = "Uge 1";
+const SHEET_NAME = "Sheet1";
 const url = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
 
 const $ = (id) => document.getElementById(id);
-const formatTime = (d) => d.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
 const now = () => new Date();
 
-// Opdater dag+dato i header
-function updateDate() {
-  const d = new Date();
-  const formatted = d.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "long" });
+function updateDate(d = new Date()) {
+  const formatted = d.toLocaleDateString("da-DK", {
+    weekday: "long", day: "numeric", month: "long"
+  });
   const el = $("currentDate");
   if (el) el.textContent = formatted;
 }
 
-// HENT + PROCESS DATA
-async function fetchActivities() {
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  renderActivities(processData(data));
-}
-
 function processData(rows) {
-  const activitiesByDay = {};
+  const daysMap = {};
 
   rows.forEach(r => {
-    const day = r.Dag || ""; // Google Sheets kolonne for 'Dag'
-    if (!activitiesByDay[day]) activitiesByDay[day] = [];
+    const day = r.Dag || "";
 
-    const startParsed = parseHM(r["Tid"]);
-    const endParsed = parseHM(r["Slut"]);
-    if (!startParsed || !endParsed) return;
+    if (!daysMap[day]) daysMap[day] = [];
 
-    activitiesByDay[day].push({
-      aktivitet: r["Aktivitet"] || "Ukendt aktivitet",
-      sted: r["Sted"] || "Ukendt sted",
-      tid: `${formatTime(new Date(0, 0, 0, startParsed.hh, startParsed.mm))} - ${formatTime(new Date(0, 0, 0, endParsed.hh, endParsed.mm))}`,
-      tilmelding: r["Tilmelding"] === "TRUE" ? "✔️" : "❌",
-      aflyst: r["Aflyst"] === "TRUE"
+    daysMap[day].push({
+      tid: r.Tid,
+      slut: r.Slut,
+      aktivitet: r.Aktivitet,
+      sted: r.Sted,
+      tilmelding: r.Tilmelding === "TRUE" ? "✔️" : "❌",
+      aflyst: r.Aflyst === "TRUE" ? "✔️" : "❌"
     });
   });
 
-  return activitiesByDay;
+  Object.keys(daysMap).forEach(day => {
+    daysMap[day].sort((a, b) => new Date(`1970-01-01T${a.tid}`) - new Date(`1970-01-01T${b.tid}`));
+  });
+
+  return daysMap;
 }
 
-function parseHM(str) {
-  if (!str) return null;
-  const [hh, mm] = str.split(":").map(Number);
-  if (isNaN(hh) || isNaN(mm)) return null;
-  return { hh, mm };
-}
-
-// Render / vis aktiviteter
 function renderActivities(data) {
   const container = $("activities");
   if (!container) return;
 
-  container.innerHTML = ""; // Ryd tidligere indhold
+  container.innerHTML = "";
 
   Object.keys(data).forEach(day => {
     const section = document.createElement("div");
@@ -68,37 +53,40 @@ function renderActivities(data) {
     title.textContent = day;
     section.appendChild(title);
 
-    data[day].forEach(activity => {
+    data[day].forEach(item => {
       const row = document.createElement("div");
       row.className = "activity-row";
 
       const timeDiv = document.createElement("div");
       timeDiv.className = "time";
-      timeDiv.textContent = activity.tid;
+      timeDiv.textContent = `${item.tid} - ${item.slut}`;
       row.appendChild(timeDiv);
 
       const titleDiv = document.createElement("div");
       titleDiv.className = "title";
-      titleDiv.textContent = activity.aktivitet;
+      titleDiv.textContent = item.aktivitet || "—";
       row.appendChild(titleDiv);
 
       const placeDiv = document.createElement("div");
       placeDiv.className = "place";
-      placeDiv.textContent = activity.sted;
+      placeDiv.textContent = item.sted || "";
       row.appendChild(placeDiv);
 
       const signupDiv = document.createElement("div");
       signupDiv.className = "signup";
-      signupDiv.textContent = `Tilmelding: ${activity.tilmelding}`;
+      const tilmeldingIcon = document.createElement("span");
+      tilmeldingIcon.className = "checkbox";
+      tilmeldingIcon.textContent = item.tilmelding;
+      signupDiv.appendChild(tilmeldingIcon);
       row.appendChild(signupDiv);
 
-      if (activity.aflyst) {
-        const cancelledDiv = document.createElement("div");
-        cancelledDiv.className = "cancelled-label";
-        cancelledDiv.textContent = "Aflyst";
-        row.classList.add("cancelled");
-        row.appendChild(cancelledDiv);
-      }
+      const aflystDiv = document.createElement("div");
+      aflystDiv.className = "cancelled";
+      const aflystIcon = document.createElement("span");
+      aflystIcon.className = "checkbox";
+      aflystIcon.textContent = item.aflyst;
+      aflystDiv.appendChild(aflystIcon);
+      row.appendChild(aflystDiv);
 
       section.appendChild(row);
     });
@@ -107,6 +95,11 @@ function renderActivities(data) {
   });
 }
 
-// STARTUP
+async function fetchActivities() {
+  const res = await fetch(url, { cache: "no-store" });
+  const data = await res.json();
+  renderActivities(processData(data));
+}
+
 updateDate();
 fetchActivities();
